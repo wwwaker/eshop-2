@@ -48,3 +48,6 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# Configuration files
+backend/src/main/resources/application.properties
