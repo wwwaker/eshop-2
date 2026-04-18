@@ -13,12 +13,14 @@ eshop-2/
 ## 技术栈
 
 ### 后端
+
 - Spring Boot 3.2.0
 - Java 21
 - MyBatis
 - MySQL 8.0+
 
 ### 前端
+
 - React 18
 - TypeScript
 - React Router 6
@@ -27,11 +29,13 @@ eshop-2/
 ## 环境要求
 
 ### 后端环境
+
 1. JDK 21
 2. Maven 3.6+
 3. MySQL 8.0+
 
 ### 前端环境
+
 1. Node.js 18.0+
 2. npm 9.0+
 
@@ -43,7 +47,6 @@ eshop-2/
 2. 执行数据库初始化脚本：
    - `backend/src/main/resources/db/schema.sql`（创建表结构）
    - `backend/src/main/resources/db/data.sql`（初始化数据）
-
 3. 修改后端数据库配置：
    - 文件：`backend/src/main/resources/application.properties.example`
    - 修改 `spring.datasource.url`、`spring.datasource.username`、`spring.datasource.password` 为你的数据库配置
@@ -53,13 +56,8 @@ eshop-2/
 ```bash
 # 进入后端目录
 cd backend
-
-# 启动开发服务器（推荐）
+# 启动开发服务器
 mvn spring-boot:run
-
-# 或构建并运行（生产环境）
-mvn clean package
-java -jar target/eshop-2-0.0.1-SNAPSHOT.jar
 ```
 
 后端服务默认运行在 `http://localhost:8080`
@@ -71,13 +69,10 @@ java -jar target/eshop-2-0.0.1-SNAPSHOT.jar
 ```bash
 # 进入前端目录
 cd frontend
-
 # 安装依赖
 npm install
-
 # 构建项目
 npm run build
-
 # 启动开发服务器
 npm start
 ```
@@ -89,13 +84,10 @@ npm start
 ```bash
 # 进入管理员前端目录
 cd admin-frontend
-
 # 安装依赖
 npm install
-
 # 构建项目
 npm run build
-
 # 启动开发服务器
 npm start
 ```
@@ -111,10 +103,12 @@ npm start
 ## 默认账号
 
 ### 管理员账号
+
 - 用户名：admin
 - 密码：admin123
 
 ### 测试用户账号
+
 - 用户名：user
 - 密码：user123
 
@@ -124,3 +118,4 @@ npm start
 2. 确保后端服务先于前端服务启动
 3. 前端API基础URL配置在 `src/services/api.ts` 文件中，可根据部署环境修改
 4. 图片上传功能默认将图片存储在 `frontend/public/images` 目录
+
