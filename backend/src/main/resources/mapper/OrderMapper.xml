@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.eshop.dao.OrderDao">
+    <resultMap id="OrderResultMap" type="com.example.eshop.entity.Order">
+        <id property="id" column="id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="status" column="status"/>
+        <result property="receiverName" column="receiver_name"/>
+        <result property="receiverPhone" column="receiver_phone"/>
+        <result property="receiverAddress" column="receiver_address"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="user" javaType="com.example.eshop.entity.User">
+            <result property="username" column="username"/>
+        </association>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.example.eshop.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (order_no, user_id, total_amount, status, receiver_name, receiver_phone, receiver_address, created_at, updated_at)
+        VALUES (#{orderNo}, #{userId}, #{totalAmount}, #{status}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{createdAt}, #{updatedAt})
+    </insert>
+    <select id="findByUserId" resultMap="OrderResultMap">
+        SELECT o.*, u.username
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        WHERE o.user_id = #{userId}
+        ORDER BY o.created_at DESC
+    </select>
+    <select id="findById" resultMap="OrderResultMap">
+        SELECT o.*, u.username
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        WHERE o.id = #{id}
+    </select>
+    <update id="updateStatus">
+        UPDATE orders SET status = #{status} WHERE id = #{orderId}
+    </update>
+    <update id="updateTotalAmount">
+        UPDATE orders SET total_amount = #{totalAmount}, updated_at = NOW() WHERE id = #{orderId}
+    </update>
+
+    <!-- 管理员系统方法 -->
+    <select id="findAll" resultMap="OrderResultMap">
+        SELECT o.*, u.username
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        ORDER BY o.created_at DESC
+    </select>
+    <select id="countTodayOrders" resultType="int">
+        SELECT COUNT(*)
+        FROM orders
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+    <select id="countTodayNewUsers" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+    <select id="getTodaySales" resultType="java.util.Map">
+        SELECT
+            COUNT(id) as todayOrderCount,
+            COALESCE(SUM(total_amount), 0) as todayTotalAmount
+        FROM orders
+        WHERE DATE(created_at) = CURDATE()
+    </select>
+    <select id="getUserActivityStats" resultType="java.util.Map">
+        SELECT
+            (SELECT COUNT(*) FROM users) as totalUsers,
+            (SELECT COUNT(DISTINCT user_id) FROM orders WHERE DATE(created_at) = CURDATE()) as activeUsersToday,
+            (SELECT COUNT(DISTINCT user_id) FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as activeUsersWeek,
+            (SELECT COUNT(DISTINCT user_id) FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as activeUsersMonth
+    </select>
+</mapper>
