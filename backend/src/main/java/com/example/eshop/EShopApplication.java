@@ -1,5 +1,6 @@
 package com.example.eshop;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -8,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Spring Boot应用程序的入口点，负责启动整个电商后端服务
  */
 @SpringBootApplication
+@MapperScan("com.example.eshop.dao")
 public class EShopApplication {
 
     public static void main(String[] args) {

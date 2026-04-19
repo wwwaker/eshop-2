@@ -13,14 +13,12 @@ eshop-2/
 ## 技术栈
 
 ### 后端
-
 - Spring Boot 3.2.0
 - Java 21
 - MyBatis
 - MySQL 8.0+
 
 ### 前端
-
 - React 18
 - TypeScript
 - React Router 6
@@ -29,13 +27,11 @@ eshop-2/
 ## 环境要求
 
 ### 后端环境
-
 1. JDK 21
 2. Maven 3.6+
 3. MySQL 8.0+
 
 ### 前端环境
-
 1. Node.js 18.0+
 2. npm 9.0+
 
@@ -103,12 +99,10 @@ npm start
 ## 默认账号
 
 ### 管理员账号
-
 - 用户名：admin
 - 密码：admin123
 
 ### 测试用户账号
-
 - 用户名：user
 - 密码：user123
 
@@ -118,4 +112,3 @@ npm start
 2. 确保后端服务先于前端服务启动
 3. 前端API基础URL配置在 `src/services/api.ts` 文件中，可根据部署环境修改
 4. 图片上传功能默认将图片存储在 `frontend/public/images` 目录
-

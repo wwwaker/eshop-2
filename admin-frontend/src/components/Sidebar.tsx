@@ -96,6 +96,21 @@ const Sidebar: React.FC = () => {
               用户管理
             </NavLink>
           </li>
+          <li style={{ marginBottom: '0.5rem' }}>
+            <NavLink 
+              to="/logs" 
+              style={({ isActive }) => ({
+                display: 'block',
+                padding: '0.75rem',
+                borderRadius: '4px',
+                textDecoration: 'none',
+                color: isActive ? 'white' : '#adb5bd',
+                backgroundColor: isActive ? '#495057' : 'transparent'
+              })}
+            >
+              日志管理
+            </NavLink>
+          </li>
         </ul>
       </nav>
       <div style={{ marginTop: 'auto' }}>

@@ -7,6 +7,7 @@ import com.example.eshop.entity.User;
 import com.example.eshop.service.CategoryService;
 import com.example.eshop.service.OrderService;
 import com.example.eshop.service.ProductService;
+import com.example.eshop.service.SysLogService;
 import com.example.eshop.service.UserService;
 import com.example.eshop.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +29,15 @@ public class AdminController {
     private final CategoryService categoryService;
     private final OrderService orderService;
     private final UserService userService;
+    private final SysLogService sysLogService;
 
     @Autowired
-    public AdminController(ProductService productService, CategoryService categoryService, OrderService orderService, UserService userService) {
+    public AdminController(ProductService productService, CategoryService categoryService, OrderService orderService, UserService userService, SysLogService sysLogService) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.orderService = orderService;
         this.userService = userService;
+        this.sysLogService = sysLogService;
     }
 
     @GetMapping("/dashboard")
@@ -192,4 +195,10 @@ public class AdminController {
         adminUser.setRole("ADMIN");
         return ResponseEntity.ok(Map.of("success", true, "data", adminUser));
     }
+
+    @GetMapping("/logs")
+    public ResponseEntity<?> getLogs() {
+        return ResponseEntity.ok(sysLogService.findAll());
+    }
+
 }
