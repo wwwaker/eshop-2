@@ -153,3 +153,19 @@ export interface DashboardData {
     todayOrderCount: number; // 今日订单数
   };
 }
+
+/**
+ * 系统日志接口
+ * 描述系统操作日志信息
+ */
+export interface SysLog {
+  id: number; // 日志ID
+  logLevel: string; // 日志级别（INFO/ERROR/WARN/DEBUG）
+  logContent: string; // 日志内容
+  createTime: string; // 创建时间
+  className: string; // 类名
+  methodName: string; // 方法名
+  requestUrl: string; // 请求URL
+  username: string; // 操作用户名
+  ip: string; // IP地址
+}

@@ -1,8 +1,11 @@
 package com.example.eshop.aspect;
 
+import com.example.eshop.controller.AdminController;
 import com.example.eshop.entity.SysLog;
+import com.example.eshop.entity.User;
 import com.example.eshop.service.SysLogService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -66,8 +69,15 @@ public class LogAspect {
             String requestUrl = request.getRequestURI();
             String ip = getClientIp(request);
 
-            // 获取当前用户（暂时使用固定值，后续可根据实际认证机制修改）
-            String username = "admin";
+            // 从session中获取当前用户
+            String username = "游客";
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                User user = (User) session.getAttribute(AdminController.SESSION_USER_KEY);
+                if (user != null) {
+                    username = user.getUsername();
+                }
+            }
 
             // 构建日志
             SysLog sysLog = new SysLog();

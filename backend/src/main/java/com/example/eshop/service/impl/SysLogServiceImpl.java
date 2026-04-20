@@ -51,4 +51,21 @@ public class SysLogServiceImpl implements SysLogService {
         
         return result;
     }
+
+    @Override
+    public Map<String, Object> findAllWithFilters(int page, int size, String username, String logLevel, String search) {
+        int offset = (page - 1) * size;
+        List<SysLog> logs = sysLogDao.findWithFilters(offset, size, username, logLevel, search);
+        int totalElements = sysLogDao.countWithFilters(username, logLevel, search);
+        int totalPages = (totalElements + size - 1) / size;
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", logs);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+        result.put("page", page);
+        result.put("size", size);
+        
+        return result;
+    }
 }

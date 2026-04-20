@@ -8,5 +8,7 @@ public interface SysLogDao {
     List<SysLog> findAll();
     List<SysLog> findByUsername(String username);
     List<SysLog> findAllWithPagination(int offset, int size);
+    List<SysLog> findWithFilters(int offset, int size, String username, String logLevel, String search);
     int countAll();
+    int countWithFilters(String username, String logLevel, String search);
 }

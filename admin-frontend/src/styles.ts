@@ -312,6 +312,75 @@ export const tables = {
   },
 };
 
+// 日志表格样式
+export const logTables = {
+  container: {
+    fontSize: '13px',
+    lineHeight: '1.4'
+  },
+  headerRow: {
+    backgroundColor: colors.backgroundLight
+  },
+  headerCell: {
+    padding: '8px',
+    fontWeight: '600',
+    fontSize: '12px',
+  },
+  headerCellCenter: {
+    padding: '8px',
+    fontWeight: '600',
+    fontSize: '12px',
+    textAlign: 'center' as const,
+  },
+  cell: {
+    padding: '6px 8px',
+    verticalAlign: 'top' as const,
+    fontSize: '12px'
+  },
+  cellCenter: {
+    padding: '6px 8px',
+    textAlign: 'center' as const,
+    verticalAlign: 'top' as const,
+    fontSize: '12px'
+  },
+  cellSmall: {
+    padding: '6px 8px',
+    textAlign: 'center' as const,
+    verticalAlign: 'top' as const,
+    fontSize: '11px',
+    color: colors.textSecondary
+  },
+  cellWrap: {
+    padding: '6px 8px',
+    verticalAlign: 'top' as const,
+    lineHeight: '1.3',
+    whiteSpace: 'normal' as const,
+    fontSize: '12px'
+  },
+  cellEllipsis: {
+    padding: '6px 8px',
+    verticalAlign: 'top' as const,
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden' as const,
+    textOverflow: 'ellipsis' as const,
+    fontSize: '12px'
+  },
+  levelTag: {
+    padding: '2px 6px',
+    borderRadius: '3px',
+    fontSize: '10px',
+    fontWeight: '600',
+  },
+  levelError: {
+    backgroundColor: '#ffebee',
+    color: '#c62828'
+  },
+  levelInfo: {
+    backgroundColor: '#e8f5e8',
+    color: '#2e7d32'
+  },
+};
+
 // 加载状态样式
 export const loading = {
   container: {

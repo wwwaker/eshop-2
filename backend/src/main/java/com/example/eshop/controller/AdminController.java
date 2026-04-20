@@ -10,6 +10,7 @@ import com.example.eshop.service.ProductService;
 import com.example.eshop.service.SysLogService;
 import com.example.eshop.service.UserService;
 import com.example.eshop.util.PasswordUtil;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,8 @@ public class AdminController {
     private final OrderService orderService;
     private final UserService userService;
     private final SysLogService sysLogService;
+    
+    public static final String SESSION_USER_KEY = "LOGGED_IN_USER";
 
     @Autowired
     public AdminController(ProductService productService, CategoryService categoryService, OrderService orderService, UserService userService, SysLogService sysLogService) {
@@ -189,11 +192,12 @@ public class AdminController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginData, HttpSession session) {
         String username = loginData.get("username");
         String password = loginData.get("password");
         User user = userService.login(username, password);
         if (user != null && "ADMIN".equals(user.getRole())) {
+            session.setAttribute(SESSION_USER_KEY, user);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", Map.of(
@@ -207,23 +211,37 @@ public class AdminController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.removeAttribute(SESSION_USER_KEY);
         return ResponseEntity.ok(Map.of("success", true));
     }
 
     @GetMapping("/user")
-    public ResponseEntity<?> getCurrentUser() {
-        User adminUser = new User();
-        adminUser.setId(1L);
-        adminUser.setUsername("admin");
-        adminUser.setRole("ADMIN");
-        return ResponseEntity.ok(Map.of("success", true, "data", adminUser));
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        User user = (User) session.getAttribute(SESSION_USER_KEY);
+        if (user != null) {
+            return ResponseEntity.ok(Map.of("success", true, "data", user));
+        } else {
+            return ResponseEntity.ok(Map.of("success", true, "data", Map.of(
+                "id", 0L,
+                "username", "未登录",
+                "role", ""
+            )));
+        }
     }
 
     @GetMapping("/logs")
     public ResponseEntity<?> getLogs(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String logLevel,
+            @RequestParam(required = false) String search) {
+        if ((username != null && !username.isEmpty()) || 
+            (logLevel != null && !logLevel.isEmpty()) || 
+            (search != null && !search.isEmpty())) {
+            return ResponseEntity.ok(sysLogService.findAllWithFilters(page, size, username, logLevel, search));
+        }
         return ResponseEntity.ok(sysLogService.findAllWithPagination(page, size));
     }
 

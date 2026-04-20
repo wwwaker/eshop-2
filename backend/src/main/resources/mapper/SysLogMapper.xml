@@ -36,7 +36,34 @@
         SELECT * FROM sys_logs ORDER BY create_time DESC LIMIT #{size} OFFSET #{offset}
     </select>
 
+    <select id="findWithFilters" resultMap="sysLogResultMap">
+        SELECT * FROM sys_logs WHERE 1=1
+        <if test="username != null and username != ''">
+            AND username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="logLevel != null and logLevel != ''">
+            AND log_level = #{logLevel}
+        </if>
+        <if test="search != null and search != ''">
+            AND (log_content LIKE CONCAT('%', #{search}, '%') OR request_url LIKE CONCAT('%', #{search}, '%') OR class_name LIKE CONCAT('%', #{search}, '%') OR method_name LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        ORDER BY create_time DESC LIMIT #{size} OFFSET #{offset}
+    </select>
+
     <select id="countAll" resultType="int">
         SELECT COUNT(*) FROM sys_logs
+    </select>
+
+    <select id="countWithFilters" resultType="int">
+        SELECT COUNT(*) FROM sys_logs WHERE 1=1
+        <if test="username != null and username != ''">
+            AND username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="logLevel != null and logLevel != ''">
+            AND log_level = #{logLevel}
+        </if>
+        <if test="search != null and search != ''">
+            AND (log_content LIKE CONCAT('%', #{search}, '%') OR request_url LIKE CONCAT('%', #{search}, '%') OR class_name LIKE CONCAT('%', #{search}, '%') OR method_name LIKE CONCAT('%', #{search}, '%'))
+        </if>
     </select>
 </mapper>

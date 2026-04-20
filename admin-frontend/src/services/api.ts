@@ -416,3 +416,19 @@ Object.assign(productApi, {
     return response.data;
   },
 });
+
+/**
+ * 日志管理API
+ * 提供日志的查询方法
+ */
+export const logApi = {
+  /**
+   * 获取所有日志列表（带筛选条件）
+   * @param params 查询参数
+   * @returns 日志列表
+   */
+  getAllWithFilters: async (params: string) => {
+    const response = await axiosInstance.get<ApiResponse<any>>(`/logs?${params}`);
+    return response.data;
+  },
+};
