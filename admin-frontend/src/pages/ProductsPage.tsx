@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Product, Category } from '../types';
 import { ProductsView, ProductsPresenter } from '../contracts';
 import { productsPresenter } from '../presenters';
+import Pagination from '../components/Pagination';
 import { typography, tables, layout, colors, alerts, buttons, loading as loadingStyles, status, inputs } from '../styles';
 
 const IMAGE_BASE_URL = 'http://localhost:3000';
@@ -17,6 +18,10 @@ const ProductsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalElements, setTotalElements] = useState(0);
+  const totalPages = Math.ceil(totalElements / pageSize);
 
   const view: ProductsView = useMemo(() => ({
     showLoading: () => setLoading(true),
@@ -28,7 +33,8 @@ const ProductsPage: React.FC = () => {
     showDeleteError: (message: string) => setError(message),
     navigateToAddProduct: () => {},
     navigateToEditProduct: (id: number) => {},
-    refreshProducts: () => productsPresenter.loadProducts()
+    refreshProducts: () => productsPresenter.loadProducts(),
+    showTotalElements: (total: number) => setTotalElements(total)
   }), []);
 
   const presenter: ProductsPresenter = productsPresenter;
@@ -78,8 +84,11 @@ const ProductsPage: React.FC = () => {
     setSortOrder('desc');
     setStatusFilter('all');
     setCategoryFilter('all');
+    setCurrentPage(1);
     presenter.resetFilters();
   };
+
+
 
   return (
     <div>
@@ -159,87 +168,105 @@ const ProductsPage: React.FC = () => {
       {loading ? (
         <div style={loadingStyles.container}>加载中...</div>
       ) : (
-        <div style={layout.overflowX.auto}>
-          <table style={tables.default}>
-            <thead>
-              <tr style={tables.header}>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('id')}
-                >
-                  ID <span style={{ color: sortField === 'id' ? colors.primary : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th style={tables.headerCell}>商品图片</th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('name')}
-                >
-                  商品名称 <span style={{ color: sortField === 'name' ? colors.primary : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('price')}
-                >
-                  价格 <span style={{ color: sortField === 'price' ? colors.primary : '#ccc', fontWeight: sortField === 'price' ? 'bold' : 'normal' }}>{sortField === 'price' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('stock')}
-                >
-                  库存 <span style={{ color: sortField === 'stock' ? colors.primary : '#ccc', fontWeight: sortField === 'stock' ? 'bold' : 'normal' }}>{sortField === 'stock' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('categoryName')}
-                >
-                  分类 <span style={{ color: sortField === 'categoryName' ? colors.primary : '#ccc', fontWeight: sortField === 'categoryName' ? 'bold' : 'normal' }}>{sortField === 'categoryName' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th style={tables.headerCell}>状态</th>
-                <th style={tables.headerCell}>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id} style={tables.row}>
-                  <td style={tables.cell}>{product.id}</td>
-                  <td style={tables.cell}>
-                    {product.imageUrl ? (
-                      <img src={IMAGE_BASE_URL + product.imageUrl} alt={product.name} style={layout.product.image} />
-                    ) : (
-                      <div style={layout.product.noImage}>
-                        无
-                      </div>
-                    )}
-                  </td>
-                  <td style={tables.cell}>{product.name}</td>
-                  <td style={tables.cell}>¥{product.price.toFixed(2)}</td>
-                  <td style={tables.cell}>{product.stock}</td>
-                  <td style={tables.cell}>{product.categoryName}</td>
-                  <td style={tables.cell}>
-                    <span style={product.status === 'ON_SALE' ? status.onSale : status.offSale}>
-                      {product.status === 'ON_SALE' ? '在售' : '下架'}
-                    </span>
-                  </td>
-                  <td style={tables.cell}>
-                    <div style={{ display: 'flex' as const, gap: '0.5rem' }}>
-                      <Link 
-                        to={`/products/edit/${product.id}`} 
-                        style={buttons.smallSecondary}
-                      >
-                        编辑
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        style={buttons.smallDanger}
-                      >
-                        删除
-                      </button>
-                    </div>
-                  </td>
+        <div>
+          <div style={layout.overflowX.auto}>
+            <table style={tables.default}>
+              <thead>
+                <tr style={tables.header}>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('id')}
+                  >
+                    ID <span style={{ color: sortField === 'id' ? colors.primary : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th style={tables.headerCell}>商品图片</th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('name')}
+                  >
+                    商品名称 <span style={{ color: sortField === 'name' ? colors.primary : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('price')}
+                  >
+                    价格 <span style={{ color: sortField === 'price' ? colors.primary : '#ccc', fontWeight: sortField === 'price' ? 'bold' : 'normal' }}>{sortField === 'price' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('stock')}
+                  >
+                    库存 <span style={{ color: sortField === 'stock' ? colors.primary : '#ccc', fontWeight: sortField === 'stock' ? 'bold' : 'normal' }}>{sortField === 'stock' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('categoryName')}
+                  >
+                    分类 <span style={{ color: sortField === 'categoryName' ? colors.primary : '#ccc', fontWeight: sortField === 'categoryName' ? 'bold' : 'normal' }}>{sortField === 'categoryName' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th style={tables.headerCell}>状态</th>
+                  <th style={tables.headerCell}>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product.id} style={tables.row}>
+                    <td style={tables.cell}>{product.id}</td>
+                    <td style={tables.cell}>
+                      {product.imageUrl ? (
+                        <img src={IMAGE_BASE_URL + product.imageUrl} alt={product.name} style={layout.product.image} />
+                      ) : (
+                        <div style={layout.product.noImage}>
+                          无
+                        </div>
+                      )}
+                    </td>
+                    <td style={tables.cell}>{product.name}</td>
+                    <td style={tables.cell}>¥{product.price.toFixed(2)}</td>
+                    <td style={tables.cell}>{product.stock}</td>
+                    <td style={tables.cell}>{product.categoryName}</td>
+                    <td style={tables.cell}>
+                      <span style={product.status === 'ON_SALE' ? status.onSale : status.offSale}>
+                        {product.status === 'ON_SALE' ? '在售' : '下架'}
+                      </span>
+                    </td>
+                    <td style={tables.cell}>
+                      <div style={{ display: 'flex' as const, gap: '0.5rem' }}>
+                        <Link 
+                          to={`/products/edit/${product.id}`} 
+                          style={buttons.smallSecondary}
+                        >
+                          编辑
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          style={buttons.smallDanger}
+                        >
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              presenter.onPageChange(page);
+            }}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+              presenter.onPageSizeChange(size);
+            }}
+          />
         </div>
       )}
     </div>

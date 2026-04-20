@@ -106,4 +106,51 @@
             (SELECT COUNT(DISTINCT user_id) FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as activeUsersWeek,
             (SELECT COUNT(DISTINCT user_id) FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as activeUsersMonth
     </select>
+
+    <select id="findAllWithPagination" resultMap="OrderResultMap" parameterType="map">
+        SELECT o.*, u.username
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        WHERE 1=1
+        <if test="search != null and search != ''">
+            AND (o.order_no LIKE CONCAT('%', #{search}, '%') OR u.username LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        <if test="status != null and status != 'all'">
+            AND o.status = #{status}
+        </if>
+        <if test="sortField != null and sortField != ''">
+            ORDER BY 
+            <choose>
+                <when test="sortField == 'totalAmount'">
+                    o.total_amount
+                </when>
+                <when test="sortField == 'createdAt'">
+                    o.created_at
+                </when>
+                <otherwise>
+                    o.${sortField}
+                </otherwise>
+            </choose>
+            <if test="sortOrder != null and sortOrder != ''">
+                ${sortOrder}
+            </if>
+        </if>
+        <if test="sortField == null or sortField == ''">
+            ORDER BY o.created_at DESC
+        </if>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilters" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        WHERE 1=1
+        <if test="search != null and search != ''">
+            AND (o.order_no LIKE CONCAT('%', #{search}, '%') OR u.username LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        <if test="status != null and status != 'all'">
+            AND o.status = #{status}
+        </if>
+    </select>
 </mapper>

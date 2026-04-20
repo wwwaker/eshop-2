@@ -10,7 +10,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户服务实现类
@@ -84,6 +86,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAllWithFilters(String search, String sortField, String sortOrder, String role) {
         return userDao.findAllWithFilters(search, sortField, sortOrder, role);
+    }
+
+    @Override
+    public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String role) {
+        int offset = (page - 1) * size;
+        List<User> users = userDao.findAllWithPagination(offset, size, search, sortField, sortOrder, role);
+        int totalElements = userDao.countWithFilters(search, role);
+        int totalPages = (totalElements + size - 1) / size;
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", users);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+        result.put("page", page);
+        result.put("size", size);
+        
+        return result;
     }
 
     @Override

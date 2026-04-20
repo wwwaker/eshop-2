@@ -31,4 +31,12 @@
     <select id="findByUsername" resultMap="sysLogResultMap">
         SELECT * FROM sys_logs WHERE username = #{username} ORDER BY create_time DESC
     </select>
+
+    <select id="findAllWithPagination" resultMap="sysLogResultMap">
+        SELECT * FROM sys_logs ORDER BY create_time DESC LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM sys_logs
+    </select>
 </mapper>

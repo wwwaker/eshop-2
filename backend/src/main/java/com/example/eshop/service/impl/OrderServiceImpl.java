@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -119,6 +120,23 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> findAllWithFilters(String search, String sortField, String sortOrder, String status) {
         return orderDao.findAllWithFilters(search, sortField, sortOrder, status);
+    }
+
+    @Override
+    public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String status) {
+        int offset = (page - 1) * size;
+        List<Order> orders = orderDao.findAllWithPagination(offset, size, search, sortField, sortOrder, status);
+        int totalElements = orderDao.countWithFilters(search, status);
+        int totalPages = (totalElements + size - 1) / size;
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", orders);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+        result.put("page", page);
+        result.put("size", size);
+        
+        return result;
     }
 
     @Override

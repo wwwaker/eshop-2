@@ -6,7 +6,9 @@ import com.example.eshop.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 商品分类服务实现类
@@ -30,6 +32,23 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<Category> findAllWithFilters(String search, String sortField, String sortOrder) {
         return categoryDao.findAllWithFilters(search, sortField, sortOrder);
+    }
+
+    @Override
+    public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder) {
+        int offset = (page - 1) * size;
+        List<Category> categories = categoryDao.findAllWithPagination(offset, size, search, sortField, sortOrder);
+        int totalElements = categoryDao.countWithFilters(search);
+        int totalPages = (totalElements + size - 1) / size;
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", categories);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+        result.put("page", page);
+        result.put("size", size);
+        
+        return result;
     }
 
     @Override

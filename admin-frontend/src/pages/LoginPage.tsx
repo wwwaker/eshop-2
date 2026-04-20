@@ -15,7 +15,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login: contextLogin } = useUser();
+  const { login: contextLogin, refreshUser } = useUser();
   const navigate = useNavigate();
 
   const view: LoginView = useMemo(() => ({
@@ -30,11 +30,8 @@ const LoginPage: React.FC = () => {
       setPassword(data.password);
     },
     setLoggedInUser: (user: User | null) => {
-      // 这里可以调用 contextLogin 来更新全局状态
-      if (user && user.username && user.password) {
-        contextLogin(user.username, user.password).catch(() => {
-          // 忽略错误，因为 Presenter 已经处理了错误
-        });
+      if (user) {
+        refreshUser(user);
       }
     }
   }), [navigate, contextLogin]);

@@ -13,6 +13,8 @@ import java.util.List;
 public interface CategoryDao {
     List<Category> findAll();
     List<Category> findAllWithFilters(String search, String sortField, String sortOrder);
+    List<Category> findAllWithPagination(int offset, int limit, String search, String sortField, String sortOrder);
+    int countWithFilters(String search);
     Category findById(Long id);
 
     // 管理员系统方法

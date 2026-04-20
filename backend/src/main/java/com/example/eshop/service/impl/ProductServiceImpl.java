@@ -6,6 +6,7 @@ import com.example.eshop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +57,23 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findAllWithFilters(String search, String sortField, String sortOrder, String status, Long categoryId) {
         return productDao.findAllWithFilters(search, sortField, sortOrder, status, categoryId);
+    }
+
+    @Override
+    public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String status, Long categoryId) {
+        int offset = (page - 1) * size;
+        List<Product> products = productDao.findAllWithPagination(offset, size, search, sortField, sortOrder, status, categoryId);
+        int totalElements = productDao.countWithFilters(search, status, categoryId);
+        int totalPages = (totalElements + size - 1) / size;
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", products);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+        result.put("page", page);
+        result.put("size", size);
+        
+        return result;
     }
 
     @Override

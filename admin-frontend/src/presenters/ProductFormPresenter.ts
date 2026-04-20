@@ -1,4 +1,4 @@
-import { Product } from '../types';
+import { Product, Category } from '../types';
 import { productApi, categoryApi, uploadApi } from '../services/api';
 import { ProductFormView, ProductFormPresenter, ProductFormState } from '../contracts';
 import { BasePresenterImpl } from './BasePresenterImpl';
@@ -24,9 +24,16 @@ export class ProductFormPresenterImpl extends BasePresenterImpl<ProductFormView>
     categoryApi.getAll()
       .then(response => {
         if (response.success && response.data) {
-          this.state.categories = response.data;
+          const data = response.data;
+          if (typeof data === 'object' && data !== null && 'content' in data && Array.isArray((data as any).content)) {
+            const paginationData = data as unknown as { content: Category[]; totalElements: number };
+            this.state.categories = paginationData.content;
+            this.getView()?.showCategories(paginationData.content);
+          } else if (Array.isArray(data)) {
+            this.state.categories = data;
+            this.getView()?.showCategories(data);
+          }
           this.state.error = '';
-          this.getView()?.showCategories(response.data);
         } else {
           this.state.error = '获取分类列表失败';
           this.getView()?.showError(this.state.error);

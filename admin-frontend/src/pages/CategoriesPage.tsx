@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Category } from '../types';
 import { CategoriesView, CategoriesPresenter } from '../contracts';
 import { categoriesPresenter } from '../presenters';
+import Pagination from '../components/Pagination';
 import { typography, tables, layout, colors, alerts, buttons, loading as loadingStyles, inputs } from '../styles';
 
 const CategoriesPage: React.FC = () => {
@@ -12,6 +13,10 @@ const CategoriesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<string>('id');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalElements, setTotalElements] = useState(0);
+  const totalPages = Math.ceil(totalElements / pageSize);
 
   const view: CategoriesView = useMemo(() => ({
     showLoading: () => setLoading(true),
@@ -20,7 +25,8 @@ const CategoriesPage: React.FC = () => {
     showCategories: (categories: Category[]) => setCategories(categories),
     showDeleteSuccess: () => alert('删除成功'),
     showDeleteError: (message: string) => setError(message),
-    refreshCategories: () => categoriesPresenter.loadCategories()
+    refreshCategories: () => categoriesPresenter.loadCategories(),
+    showTotalElements: (total: number) => setTotalElements(total)
   }), []);
 
   const presenter: CategoriesPresenter = categoriesPresenter;
@@ -55,8 +61,11 @@ const CategoriesPage: React.FC = () => {
     setSearchTerm('');
     setSortField('id');
     setSortOrder('desc');
+    setCurrentPage(1);
     presenter.resetFilters();
   };
+
+
 
   return (
     <div>
@@ -107,52 +116,70 @@ const CategoriesPage: React.FC = () => {
       {loading ? (
         <div style={loadingStyles.container}>加载中...</div>
       ) : (
-        <div style={layout.overflowX.auto}>
-          <table style={tables.default}>
-            <thead>
-              <tr style={tables.header}>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('id')}
-                >
-                  ID <span style={{ color: sortField === 'id' ? colors.primary : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('name')}
-                >
-                  分类名称 <span style={{ color: sortField === 'name' ? colors.primary : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th style={tables.headerCell}>描述</th>
-                <th style={tables.headerCell}>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category) => (
-                <tr key={category.id} style={tables.row}>
-                  <td style={tables.cell}>{category.id}</td>
-                  <td style={tables.cell}>{category.name}</td>
-                  <td style={tables.cell}>{category.description || '-'}</td>
-                  <td style={tables.cell}>
-                    <div style={{ display: 'flex' as const, gap: '0.5rem' }}>
-                      <Link 
-                        to={`/categories/edit/${category.id}`} 
-                        style={buttons.smallSecondary}
-                      >
-                        编辑
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(category.id)}
-                        style={buttons.smallDanger}
-                      >
-                        删除
-                      </button>
-                    </div>
-                  </td>
+        <div>
+          <div style={layout.overflowX.auto}>
+            <table style={tables.default}>
+              <thead>
+                <tr style={tables.header}>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('id')}
+                  >
+                    ID <span style={{ color: sortField === 'id' ? colors.primary : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('name')}
+                  >
+                    分类名称 <span style={{ color: sortField === 'name' ? colors.primary : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th style={tables.headerCell}>描述</th>
+                  <th style={tables.headerCell}>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {categories.map((category) => (
+                  <tr key={category.id} style={tables.row}>
+                    <td style={tables.cell}>{category.id}</td>
+                    <td style={tables.cell}>{category.name}</td>
+                    <td style={tables.cell}>{category.description || '-'}</td>
+                    <td style={tables.cell}>
+                      <div style={{ display: 'flex' as const, gap: '0.5rem' }}>
+                        <Link 
+                          to={`/categories/edit/${category.id}`} 
+                          style={buttons.smallSecondary}
+                        >
+                          编辑
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(category.id)}
+                          style={buttons.smallDanger}
+                        >
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              presenter.onPageChange(page);
+            }}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+              presenter.onPageSizeChange(size);
+            }}
+          />
         </div>
       )}
     </div>

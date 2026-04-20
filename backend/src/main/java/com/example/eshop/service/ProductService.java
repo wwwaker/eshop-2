@@ -19,6 +19,7 @@ public interface ProductService {
     // 管理员系统方法
     List<Product> findAll();
     List<Product> findAllWithFilters(String search, String sortField, String sortOrder, String status, Long categoryId);
+    Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String status, Long categoryId);
     void save(Product product);
     void deleteById(Long id);
     void updateStock(Long id, int stock);

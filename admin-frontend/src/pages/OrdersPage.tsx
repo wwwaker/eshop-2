@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Order } from '../types';
 import { OrdersView, OrdersPresenter } from '../contracts';
 import { ordersPresenter } from '../presenters';
+import Pagination from '../components/Pagination';
 import { typography, tables, layout, colors, alerts, status, loading as loadingStyles, buttons, inputs } from '../styles';
 
 const OrdersPage: React.FC = () => {
@@ -13,13 +14,18 @@ const OrdersPage: React.FC = () => {
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalElements, setTotalElements] = useState(0);
+  const totalPages = Math.ceil(totalElements / pageSize);
 
   const view: OrdersView = useMemo(() => ({
     showLoading: () => setLoading(true),
     hideLoading: () => setLoading(false),
     showError: (message: string) => setError(message),
     showOrders: (orders: Order[]) => setOrders(orders),
-    refreshOrders: () => ordersPresenter.loadOrders()
+    refreshOrders: () => ordersPresenter.loadOrders(),
+    showTotalElements: (total: number) => setTotalElements(total)
   }), []);
 
   const presenter: OrdersPresenter = ordersPresenter;
@@ -55,8 +61,11 @@ const OrdersPage: React.FC = () => {
     setSortField('createdAt');
     setSortOrder('desc');
     setStatusFilter('all');
+    setCurrentPage(1);
     presenter.resetFilters();
   };
+
+
 
   return (
     <div>
@@ -115,60 +124,78 @@ const OrdersPage: React.FC = () => {
       {loading ? (
         <div style={loadingStyles.container}>加载中...</div>
       ) : (
-        <div style={layout.overflowX.auto}>
-          <table style={tables.default}>
-            <thead>
-              <tr style={tables.header}>
-                <th style={tables.headerCell}>订单号</th>
-                <th style={tables.headerCell}>用户</th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('totalAmount')}
-                >
-                  金额 <span style={{ color: sortField === 'totalAmount' ? colors.primary : '#ccc', fontWeight: sortField === 'totalAmount' ? 'bold' : 'normal' }}>{sortField === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th style={tables.headerCell}>状态</th>
-                <th style={tables.headerCell}>收货人</th>
-                <th style={tables.headerCell}>联系电话</th>
-                <th style={tables.headerCell}>收货地址</th>
-                <th 
-                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSort('createdAt')}
-                >
-                  创建时间 <span style={{ color: sortField === 'createdAt' ? colors.primary : '#ccc', fontWeight: sortField === 'createdAt' ? 'bold' : 'normal' }}>{sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
-                </th>
-                <th style={tables.headerCell}>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} style={tables.row}>
-                  <td style={tables.cell}>{order.orderNo}</td>
-                  <td style={tables.cell}>{order.user?.username || ''}</td>
-                  <td style={tables.cell}>¥{order.totalAmount.toFixed(2)}</td>
-                  <td style={tables.cell}>
-                    <span style={{ ...status.order, backgroundColor: presenter.getStatusColor(order.status) }}>
-                      {presenter.getStatusText(order.status)}
-                    </span>
-                  </td>
-                  <td style={tables.cell}>{order.receiverName}</td>
-                  <td style={tables.cell}>{order.receiverPhone}</td>
-                  <td style={tables.cell}>{order.receiverAddress}</td>
-                  <td style={tables.cell}>
-                    {new Date(order.createdAt).toLocaleString()}
-                  </td>
-                  <td style={tables.cell}>
-                    <Link 
-                      to={`/orders/detail/${order.id}`} 
-                      style={buttons.smallPrimary}
-                    >
-                      查看详情
-                    </Link>
-                  </td>
+        <div>
+          <div style={layout.overflowX.auto}>
+            <table style={tables.default}>
+              <thead>
+                <tr style={tables.header}>
+                  <th style={tables.headerCell}>订单号</th>
+                  <th style={tables.headerCell}>用户</th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('totalAmount')}
+                  >
+                    金额 <span style={{ color: sortField === 'totalAmount' ? colors.primary : '#ccc', fontWeight: sortField === 'totalAmount' ? 'bold' : 'normal' }}>{sortField === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th style={tables.headerCell}>状态</th>
+                  <th style={tables.headerCell}>收货人</th>
+                  <th style={tables.headerCell}>联系电话</th>
+                  <th style={tables.headerCell}>收货地址</th>
+                  <th 
+                    style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                    onClick={() => handleSort('createdAt')}
+                  >
+                    创建时间 <span style={{ color: sortField === 'createdAt' ? colors.primary : '#ccc', fontWeight: sortField === 'createdAt' ? 'bold' : 'normal' }}>{sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  </th>
+                  <th style={tables.headerCell}>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.id} style={tables.row}>
+                    <td style={tables.cell}>{order.orderNo}</td>
+                    <td style={tables.cell}>{order.user?.username || ''}</td>
+                    <td style={tables.cell}>¥{order.totalAmount.toFixed(2)}</td>
+                    <td style={tables.cell}>
+                      <span style={{ ...status.order, backgroundColor: presenter.getStatusColor(order.status) }}>
+                        {presenter.getStatusText(order.status)}
+                      </span>
+                    </td>
+                    <td style={tables.cell}>{order.receiverName}</td>
+                    <td style={tables.cell}>{order.receiverPhone}</td>
+                    <td style={tables.cell}>{order.receiverAddress}</td>
+                    <td style={tables.cell}>
+                      {new Date(order.createdAt).toLocaleString()}
+                    </td>
+                    <td style={tables.cell}>
+                      <Link 
+                        to={`/orders/detail/${order.id}`} 
+                        style={buttons.smallPrimary}
+                      >
+                        查看详情
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              presenter.onPageChange(page);
+            }}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+              presenter.onPageSizeChange(size);
+            }}
+          />
         </div>
       )}
     </div>

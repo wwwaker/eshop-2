@@ -7,4 +7,6 @@ public interface SysLogDao {
     int insert(SysLog sysLog);
     List<SysLog> findAll();
     List<SysLog> findByUsername(String username);
+    List<SysLog> findAllWithPagination(int offset, int size);
+    int countAll();
 }

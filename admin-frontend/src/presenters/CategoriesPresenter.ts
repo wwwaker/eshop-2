@@ -10,7 +10,10 @@ export class CategoriesPresenterImpl extends BasePresenterImpl<CategoriesView> i
     error: '',
     searchTerm: '',
     sortField: 'id',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
+    currentPage: 1,
+    pageSize: 20,
+    totalElements: 0
   };
 
   attachView(view: CategoriesView): void {
@@ -22,6 +25,8 @@ export class CategoriesPresenterImpl extends BasePresenterImpl<CategoriesView> i
     this.getView()?.showLoading();
 
     const params = new URLSearchParams();
+    params.append('page', this.state.currentPage.toString());
+    params.append('size', this.state.pageSize.toString());
     params.append('sortField', this.state.sortField);
     params.append('sortOrder', this.state.sortOrder);
 
@@ -32,9 +37,20 @@ export class CategoriesPresenterImpl extends BasePresenterImpl<CategoriesView> i
     categoryApi.getAllWithFilters(params.toString())
       .then(response => {
         if (response.success && response.data) {
-          this.state.categories = response.data;
+          const data = response.data;
+          if (typeof data === 'object' && data !== null && 'content' in data && Array.isArray(data.content)) {
+            const paginationData = data as unknown as { content: any[]; totalElements: number };
+            this.state.categories = paginationData.content;
+            this.state.totalElements = paginationData.totalElements || 0;
+            this.getView()?.showCategories(paginationData.content);
+            this.getView()?.showTotalElements(paginationData.totalElements || 0);
+          } else if (Array.isArray(data)) {
+            this.state.categories = data;
+            this.state.totalElements = data.length;
+            this.getView()?.showCategories(data);
+            this.getView()?.showTotalElements(data.length);
+          }
           this.state.error = '';
-          this.getView()?.showCategories(response.data);
         } else {
           this.state.error = response.error || '获取分类列表失败';
           this.getView()?.showError(this.state.error);
@@ -52,6 +68,7 @@ export class CategoriesPresenterImpl extends BasePresenterImpl<CategoriesView> i
 
   searchCategories(searchTerm: string): void {
     this.state.searchTerm = searchTerm;
+    this.state.currentPage = 1;
     this.loadCategories();
   }
 
@@ -80,6 +97,7 @@ export class CategoriesPresenterImpl extends BasePresenterImpl<CategoriesView> i
     this.state.searchTerm = '';
     this.state.sortField = 'id';
     this.state.sortOrder = 'desc';
+    this.state.currentPage = 1;
     this.loadCategories();
   }
 
@@ -94,6 +112,17 @@ export class CategoriesPresenterImpl extends BasePresenterImpl<CategoriesView> i
       this.state.sortField = field;
       this.state.sortOrder = 'asc';
     }
+    this.loadCategories();
+  }
+
+  onPageChange(page: number): void {
+    this.state.currentPage = page;
+    this.loadCategories();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.state.pageSize = size;
+    this.state.currentPage = 1;
     this.loadCategories();
   }
 

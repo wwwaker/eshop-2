@@ -62,13 +62,15 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(
+    public ResponseEntity<?> getAllProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long categoryId) {
-        return ResponseEntity.ok(productService.findAllWithFilters(search, sortField, sortOrder, status, categoryId));
+        return ResponseEntity.ok(productService.findAllWithPagination(page, size, search, sortField, sortOrder, status, categoryId));
     }
 
     @GetMapping("/products/{id}")
@@ -96,11 +98,13 @@ public class AdminController {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getAllCategories(
+    public ResponseEntity<?> getAllCategories(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder) {
-        return ResponseEntity.ok(categoryService.findAllWithFilters(search, sortField, sortOrder));
+        return ResponseEntity.ok(categoryService.findAllWithPagination(page, size, search, sortField, sortOrder));
     }
 
     @GetMapping("/categories/{id}")
@@ -128,12 +132,14 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<Order>> getAllOrders(
+    public ResponseEntity<?> getAllOrders(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(orderService.findAllWithFilters(search, sortField, sortOrder, status));
+        return ResponseEntity.ok(orderService.findAllWithPagination(page, size, search, sortField, sortOrder, status));
     }
 
     @GetMapping("/orders/{id}")
@@ -148,12 +154,14 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers(
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) String role) {
-        return ResponseEntity.ok(userService.findAllWithFilters(search, sortField, sortOrder, role));
+        return ResponseEntity.ok(userService.findAllWithPagination(page, size, search, sortField, sortOrder, role));
     }
 
     @GetMapping("/users/{id}")
@@ -213,8 +221,10 @@ public class AdminController {
     }
 
     @GetMapping("/logs")
-    public ResponseEntity<?> getLogs() {
-        return ResponseEntity.ok(sysLogService.findAll());
+    public ResponseEntity<?> getLogs(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(sysLogService.findAllWithPagination(page, size));
     }
 
 }

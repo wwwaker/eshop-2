@@ -18,6 +18,7 @@ public interface OrderService {
     // 管理员系统方法
     List<Order> findAll();
     List<Order> findAllWithFilters(String search, String sortField, String sortOrder, String status);
+    Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String status);
     void shipOrder(Long orderId);
     int countTodayOrders();
     int countTodayNewUsers();

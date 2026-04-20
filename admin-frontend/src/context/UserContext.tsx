@@ -13,8 +13,9 @@ interface UserContextType {
   user: User | null; // 当前登录的用户信息
   isAuthenticated: boolean; // 是否已认证
   isLoading: boolean; // 是否正在加载认证状态
-  login: (username: string, password: string) => Promise<boolean>; // 登录方法
-  logout: () => Promise<void>; // 登出方法
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  refreshUser: (user: User) => void; // 登出方法
 }
 
 // 创建用户上下文
@@ -103,6 +104,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     login,
     logout,
+    refreshUser: (user: User) => setUser(user),
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

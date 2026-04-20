@@ -491,3 +491,57 @@ export const status = {
     color: 'white',
   },
 };
+
+// 分页样式
+export const pagination = {
+  container: {
+    display: 'flex' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    gap: '0.5rem',
+    marginTop: '1.5rem',
+    padding: '1rem 0',
+  },
+  button: {
+    padding: '0.5rem 1rem',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '4px',
+    backgroundColor: colors.background,
+    color: colors.text,
+    cursor: 'pointer' as const,
+    fontSize: '0.9rem',
+    minWidth: '40px',
+  },
+  buttonDisabled: {
+    padding: '0.5rem 1rem',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '4px',
+    backgroundColor: colors.backgroundLight,
+    color: colors.textLight,
+    cursor: 'not-allowed' as const,
+    fontSize: '0.9rem',
+    minWidth: '40px',
+  },
+  buttonActive: {
+    padding: '0.5rem 1rem',
+    border: `1px solid ${colors.primary}`,
+    borderRadius: '4px',
+    backgroundColor: colors.primary,
+    color: colors.background,
+    cursor: 'pointer' as const,
+    fontSize: '0.9rem',
+    minWidth: '40px',
+  },
+  info: {
+    padding: '0.5rem 1rem',
+    fontSize: '0.9rem',
+    color: colors.textSecondary,
+  },
+  pageSizeSelect: {
+    padding: '0.5rem',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '4px',
+    fontSize: '0.9rem',
+    marginLeft: '1rem',
+  },
+};

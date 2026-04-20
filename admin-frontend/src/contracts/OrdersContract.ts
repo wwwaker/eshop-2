@@ -6,6 +6,7 @@ export interface OrdersView {
   showError(message: string): void;
   showOrders(orders: Order[]): void;
   refreshOrders(): void;
+  showTotalElements(total: number): void;
 }
 
 export interface OrdersPresenter {
@@ -19,6 +20,8 @@ export interface OrdersPresenter {
   onSearchTermChange(term: string): void;
   onStatusFilterChange(status: string): void;
   onSortFieldChange(field: string): void;
+  onPageChange(page: number): void;
+  onPageSizeChange(size: number): void;
   getCurrentState(): OrdersState;
   getStatusText(status: string): string;
   getStatusColor(status: string): string;
@@ -32,4 +35,7 @@ export interface OrdersState {
   sortField: string;
   sortOrder: 'asc' | 'desc';
   statusFilter: string;
+  currentPage: number;
+  pageSize: number;
+  totalElements: number;
 }

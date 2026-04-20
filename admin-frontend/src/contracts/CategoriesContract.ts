@@ -8,6 +8,7 @@ export interface CategoriesView {
   showDeleteSuccess(): void;
   showDeleteError(message: string): void;
   refreshCategories(): void;
+  showTotalElements(total: number): void;
 }
 
 export interface CategoriesPresenter {
@@ -20,6 +21,8 @@ export interface CategoriesPresenter {
   resetFilters(): void;
   onSearchTermChange(term: string): void;
   onSortFieldChange(field: string): void;
+  onPageChange(page: number): void;
+  onPageSizeChange(size: number): void;
   getCurrentState(): CategoriesState;
 }
 
@@ -30,4 +33,7 @@ export interface CategoriesState {
   searchTerm: string;
   sortField: string;
   sortOrder: 'asc' | 'desc';
+  currentPage: number;
+  pageSize: number;
+  totalElements: number;
 }

@@ -11,6 +11,7 @@ export interface ProductsView {
   navigateToAddProduct(): void;
   navigateToEditProduct(id: number): void;
   refreshProducts(): void;
+  showTotalElements(total: number): void;
 }
 
 export interface ProductsPresenter {
@@ -28,6 +29,8 @@ export interface ProductsPresenter {
   onStatusFilterChange(status: string): void;
   onCategoryFilterChange(categoryId: string): void;
   onSortFieldChange(field: string): void;
+  onPageChange(page: number): void;
+  onPageSizeChange(size: number): void;
   getCurrentState(): ProductsState;
 }
 
@@ -41,4 +44,7 @@ export interface ProductsState {
   sortOrder: 'asc' | 'desc';
   statusFilter: string;
   categoryFilter: string;
+  currentPage: number;
+  pageSize: number;
+  totalElements: number;
 }

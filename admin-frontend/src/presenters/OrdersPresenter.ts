@@ -11,7 +11,10 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
     searchTerm: '',
     sortField: 'createdAt',
     sortOrder: 'desc',
-    statusFilter: 'all'
+    statusFilter: 'all',
+    currentPage: 1,
+    pageSize: 20,
+    totalElements: 0
   };
 
   attachView(view: OrdersView): void {
@@ -23,6 +26,8 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
     this.getView()?.showLoading();
 
     const params = new URLSearchParams();
+    params.append('page', this.state.currentPage.toString());
+    params.append('size', this.state.pageSize.toString());
     params.append('sortField', this.state.sortField);
     params.append('sortOrder', this.state.sortOrder);
 
@@ -36,9 +41,20 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
     orderApi.getAllWithFilters(params.toString())
       .then(response => {
         if (response.success && response.data) {
-          this.state.orders = response.data;
+          const data = response.data;
+          if (typeof data === 'object' && data !== null && 'content' in data && Array.isArray(data.content)) {
+            const paginationData = data as unknown as { content: any[]; totalElements: number };
+            this.state.orders = paginationData.content;
+            this.state.totalElements = paginationData.totalElements || 0;
+            this.getView()?.showOrders(paginationData.content);
+            this.getView()?.showTotalElements(paginationData.totalElements || 0);
+          } else if (Array.isArray(data)) {
+            this.state.orders = data;
+            this.state.totalElements = data.length;
+            this.getView()?.showOrders(data);
+            this.getView()?.showTotalElements(data.length);
+          }
           this.state.error = '';
-          this.getView()?.showOrders(response.data);
         } else {
           this.state.error = response.error || '获取订单列表失败';
           this.getView()?.showError(this.state.error);
@@ -56,11 +72,13 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
 
   searchOrders(searchTerm: string): void {
     this.state.searchTerm = searchTerm;
+    this.state.currentPage = 1;
     this.loadOrders();
   }
 
   filterByStatus(status: string): void {
     this.state.statusFilter = status;
+    this.state.currentPage = 1;
     this.loadOrders();
   }
 
@@ -75,6 +93,7 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
     this.state.sortField = 'createdAt';
     this.state.sortOrder = 'desc';
     this.state.statusFilter = 'all';
+    this.state.currentPage = 1;
     this.loadOrders();
   }
 
@@ -84,6 +103,7 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
 
   onStatusFilterChange(status: string): void {
     this.state.statusFilter = status;
+    this.state.currentPage = 1;
     this.loadOrders();
   }
 
@@ -94,6 +114,17 @@ export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implement
       this.state.sortField = field;
       this.state.sortOrder = 'asc';
     }
+    this.loadOrders();
+  }
+
+  onPageChange(page: number): void {
+    this.state.currentPage = page;
+    this.loadOrders();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.state.pageSize = size;
+    this.state.currentPage = 1;
     this.loadOrders();
   }
 

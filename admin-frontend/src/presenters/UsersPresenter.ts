@@ -11,7 +11,10 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
     searchTerm: '',
     sortField: 'id',
     sortOrder: 'desc',
-    roleFilter: 'all'
+    roleFilter: 'all',
+    currentPage: 1,
+    pageSize: 20,
+    totalElements: 0
   };
 
   attachView(view: UsersView): void {
@@ -23,6 +26,8 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
     this.getView()?.showLoading();
 
     const params = new URLSearchParams();
+    params.append('page', this.state.currentPage.toString());
+    params.append('size', this.state.pageSize.toString());
     params.append('sortField', this.state.sortField);
     params.append('sortOrder', this.state.sortOrder);
 
@@ -36,9 +41,20 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
     userApi.getAllWithFilters(params.toString())
       .then(response => {
         if (response.success && response.data) {
-          this.state.users = response.data;
+          const data = response.data;
+          if (typeof data === 'object' && data !== null && 'content' in data && Array.isArray(data.content)) {
+            const paginationData = data as unknown as { content: any[]; totalElements: number };
+            this.state.users = paginationData.content;
+            this.state.totalElements = paginationData.totalElements || 0;
+            this.getView()?.showUsers(paginationData.content);
+            this.getView()?.showTotalElements(paginationData.totalElements || 0);
+          } else if (Array.isArray(data)) {
+            this.state.users = data;
+            this.state.totalElements = data.length;
+            this.getView()?.showUsers(data);
+            this.getView()?.showTotalElements(data.length);
+          }
           this.state.error = '';
-          this.getView()?.showUsers(response.data);
         } else {
           this.state.error = response.error || '获取用户列表失败';
           this.getView()?.showError(this.state.error);
@@ -56,11 +72,13 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
 
   searchUsers(searchTerm: string): void {
     this.state.searchTerm = searchTerm;
+    this.state.currentPage = 1;
     this.loadUsers();
   }
 
   filterByRole(role: string): void {
     this.state.roleFilter = role;
+    this.state.currentPage = 1;
     this.loadUsers();
   }
 
@@ -90,6 +108,7 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
     this.state.sortField = 'id';
     this.state.sortOrder = 'desc';
     this.state.roleFilter = 'all';
+    this.state.currentPage = 1;
     this.loadUsers();
   }
 
@@ -99,6 +118,7 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
 
   onRoleFilterChange(role: string): void {
     this.state.roleFilter = role;
+    this.state.currentPage = 1;
     this.loadUsers();
   }
 
@@ -109,6 +129,17 @@ export class UsersPresenterImpl extends BasePresenterImpl<UsersView> implements 
       this.state.sortField = field;
       this.state.sortOrder = 'asc';
     }
+    this.loadUsers();
+  }
+
+  onPageChange(page: number): void {
+    this.state.currentPage = page;
+    this.loadUsers();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.state.pageSize = size;
+    this.state.currentPage = 1;
     this.loadUsers();
   }
 

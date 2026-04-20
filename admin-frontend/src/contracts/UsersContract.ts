@@ -8,6 +8,7 @@ export interface UsersView {
   showDeleteSuccess(): void;
   showDeleteError(message: string): void;
   refreshUsers(): void;
+  showTotalElements(total: number): void;
 }
 
 export interface UsersPresenter {
@@ -22,6 +23,8 @@ export interface UsersPresenter {
   onSearchTermChange(term: string): void;
   onRoleFilterChange(role: string): void;
   onSortFieldChange(field: string): void;
+  onPageChange(page: number): void;
+  onPageSizeChange(size: number): void;
   getCurrentState(): UsersState;
 }
 
@@ -33,4 +36,7 @@ export interface UsersState {
   sortField: string;
   sortOrder: 'asc' | 'desc';
   roleFilter: string;
+  currentPage: number;
+  pageSize: number;
+  totalElements: number;
 }

@@ -37,12 +37,9 @@ export class LoginPresenterImpl extends BasePresenterImpl<LoginView> implements 
           this.getView()?.showSuccess('登录成功');
           this.getView()?.setLoggedInUser(response.data);
           
-          // 存储用户信息到本地存储
           localStorage.setItem('user', JSON.stringify(response.data));
           
-          setTimeout(() => {
-            this.getView()?.navigateToDashboard();
-          }, 1000);
+          this.getView()?.navigateToDashboard();
         } else {
           this.state.error = response.error || '登录失败';
           this.getView()?.showError(this.state.error);
