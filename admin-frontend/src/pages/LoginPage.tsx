@@ -4,6 +4,7 @@ import { useUser } from '../context/UserContext';
 import { User } from '../types';
 import { LoginView, LoginPresenter } from '../contracts';
 import { loginPresenter } from '../presenters';
+import { containers, typography, inputs, buttons, alerts, layout } from '../styles';
 
 /**
  * 管理员登录页面
@@ -14,7 +15,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login: contextLogin, user } = useUser();
+  const { login: contextLogin } = useUser();
   const navigate = useNavigate();
 
   const view: LoginView = useMemo(() => ({
@@ -60,16 +61,16 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '4rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: '8px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>管理员登录</h2>
+    <div style={containers.loginContainer}>
+      <h2 style={{ ...typography.textCenter, marginBottom: '2rem' }}>管理员登录</h2>
       {error && (
-        <div style={{ color: '#dc3545', backgroundColor: '#f8d7da', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', border: '1px solid #f5c6cb' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="username" style={{ fontWeight: '500' }}>用户名</label>
+      <form onSubmit={handleSubmit} style={containers.form}>
+        <div style={containers.formGroup}>
+          <label htmlFor="username" style={typography.label}>用户名</label>
           <input
             type="text"
             id="username"
@@ -77,12 +78,12 @@ const LoginPage: React.FC = () => {
             onChange={(e) => setUsername(e.target.value)}
             required
             placeholder="请输入管理员用户名"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="password" style={{ fontWeight: '500' }}>密码</label>
+        <div style={containers.formGroup}>
+          <label htmlFor="password" style={typography.label}>密码</label>
           <input
             type="password"
             id="password"
@@ -90,29 +91,19 @@ const LoginPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
             placeholder="请输入密码"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          style={{
-            padding: '0.75rem',
-            backgroundColor: loading ? '#6c757d' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '1rem',
-            fontWeight: '500',
-            marginTop: '0.5rem'
-          }}
+          style={loading ? buttons.disabled : buttons.primary}
         >
           {loading ? '登录中...' : '登录'}
         </button>
       </form>
-      <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>
+      <div style={{ ...layout.marginTop.sm, ...typography.textCenter, ...typography.textSmall }}>
         默认账号：admin / admin123
       </div>
     </div>

@@ -1,4 +1,3 @@
-import { User } from '../types';
 import { authApi } from '../services/api';
 import { LoginView, LoginPresenter, LoginState } from '../contracts';
 import { BasePresenterImpl } from './BasePresenterImpl';

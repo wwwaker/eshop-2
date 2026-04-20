@@ -1,4 +1,4 @@
-import { Product, Category } from '../types';
+import { Product } from '../types';
 import { productApi, categoryApi, uploadApi } from '../services/api';
 import { ProductFormView, ProductFormPresenter, ProductFormState } from '../contracts';
 import { BasePresenterImpl } from './BasePresenterImpl';

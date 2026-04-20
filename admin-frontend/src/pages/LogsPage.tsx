@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { typography, tables, layout, alerts } from '../styles';
 
 interface SysLog {
   id: number;
@@ -42,38 +43,38 @@ const LogsPage: React.FC = () => {
 
   return (
     <div>
-      <h1>系统日志</h1>
+      <h1 style={typography.h1}>系统日志</h1>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
 
       {loading ? (
-        <div>加载中...</div>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>加载中...</div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={layout.overflowX.auto}>
+          <table style={tables.default}>
             <thead>
-              <tr style={{ backgroundColor: '#f8f9fa' }}>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>ID</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>用户名</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>日志级别</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>日志内容</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>请求URL</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>IP地址</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>类名</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>方法名</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>操作时间</th>
+              <tr style={tables.header}>
+                <th style={tables.headerCell}>ID</th>
+                <th style={tables.headerCell}>用户名</th>
+                <th style={tables.headerCell}>日志级别</th>
+                <th style={tables.headerCell}>日志内容</th>
+                <th style={tables.headerCell}>请求URL</th>
+                <th style={tables.headerCell}>IP地址</th>
+                <th style={tables.headerCell}>类名</th>
+                <th style={tables.headerCell}>方法名</th>
+                <th style={tables.headerCell}>操作时间</th>
               </tr>
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.id}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.username}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                <tr key={log.id} style={tables.row}>
+                  <td style={tables.cell}>{log.id}</td>
+                  <td style={tables.cell}>{log.username}</td>
+                  <td style={tables.cell}>
                     <span style={{
                       padding: '0.25rem 0.5rem',
                       borderRadius: '4px',
@@ -85,12 +86,12 @@ const LogsPage: React.FC = () => {
                       {log.logLevel}
                     </span>
                   </td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.logContent}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.requestUrl}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.ip}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.className}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{log.methodName}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                  <td style={tables.cell}>{log.logContent}</td>
+                  <td style={tables.cell}>{log.requestUrl}</td>
+                  <td style={tables.cell}>{log.ip}</td>
+                  <td style={tables.cell}>{log.className}</td>
+                  <td style={tables.cell}>{log.methodName}</td>
+                  <td style={tables.cell}>
                     {new Date(log.createTime).toLocaleString()}
                   </td>
                 </tr>

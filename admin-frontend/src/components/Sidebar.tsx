@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { colors, spacing, navigation, buttons } from '../styles';
 
 /**
  * 管理员系统侧边栏组件
@@ -10,8 +11,8 @@ const Sidebar: React.FC = () => {
   const { user, logout } = useUser();
 
   return (
-    <div style={{ width: '200px', height: '100vh', backgroundColor: '#343a40', color: 'white', padding: '1rem' }}>
-      <div style={{ marginBottom: '2rem' }}>
+    <div style={{ width: '200px', height: '100vh', backgroundColor: colors.dark, color: colors.background, padding: spacing.md }}>
+      <div style={{ marginBottom: spacing.xl }}>
         <h2 style={{ fontSize: '1.2rem', margin: '0 0 1rem 0' }}>EShop 管理系统</h2>
         {user && (
           <div style={{ fontSize: '0.9rem', color: '#adb5bd' }}>
@@ -24,14 +25,7 @@ const Sidebar: React.FC = () => {
           <li style={{ marginBottom: '0.5rem' }}>
             <NavLink 
               to="/dashboard" 
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                textDecoration: 'none',
-                color: isActive ? 'white' : '#adb5bd',
-                backgroundColor: isActive ? '#495057' : 'transparent'
-              })}
+              style={({ isActive }) => navigation.navLink(isActive)}
             >
               仪表盘
             </NavLink>
@@ -39,14 +33,7 @@ const Sidebar: React.FC = () => {
           <li style={{ marginBottom: '0.5rem' }}>
             <NavLink 
               to="/products" 
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                textDecoration: 'none',
-                color: isActive ? 'white' : '#adb5bd',
-                backgroundColor: isActive ? '#495057' : 'transparent'
-              })}
+              style={({ isActive }) => navigation.navLink(isActive)}
             >
               商品管理
             </NavLink>
@@ -54,14 +41,7 @@ const Sidebar: React.FC = () => {
           <li style={{ marginBottom: '0.5rem' }}>
             <NavLink 
               to="/categories" 
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                textDecoration: 'none',
-                color: isActive ? 'white' : '#adb5bd',
-                backgroundColor: isActive ? '#495057' : 'transparent'
-              })}
+              style={({ isActive }) => navigation.navLink(isActive)}
             >
               分类管理
             </NavLink>
@@ -69,14 +49,7 @@ const Sidebar: React.FC = () => {
           <li style={{ marginBottom: '0.5rem' }}>
             <NavLink 
               to="/orders" 
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                textDecoration: 'none',
-                color: isActive ? 'white' : '#adb5bd',
-                backgroundColor: isActive ? '#495057' : 'transparent'
-              })}
+              style={({ isActive }) => navigation.navLink(isActive)}
             >
               订单管理
             </NavLink>
@@ -84,14 +57,7 @@ const Sidebar: React.FC = () => {
           <li style={{ marginBottom: '0.5rem' }}>
             <NavLink 
               to="/users" 
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                textDecoration: 'none',
-                color: isActive ? 'white' : '#adb5bd',
-                backgroundColor: isActive ? '#495057' : 'transparent'
-              })}
+              style={({ isActive }) => navigation.navLink(isActive)}
             >
               用户管理
             </NavLink>
@@ -99,14 +65,7 @@ const Sidebar: React.FC = () => {
           <li style={{ marginBottom: '0.5rem' }}>
             <NavLink 
               to="/logs" 
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '0.75rem',
-                borderRadius: '4px',
-                textDecoration: 'none',
-                color: isActive ? 'white' : '#adb5bd',
-                backgroundColor: isActive ? '#495057' : 'transparent'
-              })}
+              style={({ isActive }) => navigation.navLink(isActive)}
             >
               日志管理
             </NavLink>
@@ -116,16 +75,7 @@ const Sidebar: React.FC = () => {
       <div style={{ marginTop: 'auto' }}>
         <button
           onClick={logout}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem'
-          }}
+          style={buttons.logout}
         >
           退出登录
         </button>

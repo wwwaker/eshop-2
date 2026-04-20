@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Product, Category } from '../types';
 import { ProductFormView, ProductFormPresenter } from '../contracts';
 import { productFormPresenter } from '../presenters';
+import { typography, layout, alerts, inputs, buttons, loading as loadingStyles, imagePreview } from '../styles';
 
 const IMAGE_BASE_URL = 'http://localhost:3000';
 
@@ -96,25 +97,25 @@ const ProductFormPage: React.FC = () => {
 
   return (
     <div>
-      <h1>{isEdit ? '编辑商品' : '添加商品'}</h1>
+      <h1 style={typography.h1}>{isEdit ? '编辑商品' : '添加商品'}</h1>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
 
       {success && (
-        <div style={{ padding: '1rem', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.success}>
           {success}
         </div>
       )}
 
       {loading ? (
-        <div>加载中...</div>
+        <div style={loadingStyles.container}>加载中...</div>
       ) : (
         <form onSubmit={handleSubmit} style={{ maxWidth: '600px' }}>
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>商品名称</label>
             <input
               type="text"
@@ -122,11 +123,11 @@ const ProductFormPage: React.FC = () => {
               value={formData.name}
               onChange={handleChange}
               required
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>价格</label>
             <input
               type="number"
@@ -136,11 +137,11 @@ const ProductFormPage: React.FC = () => {
               required
               min="0"
               step="0.01"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>库存</label>
             <input
               type="number"
@@ -149,18 +150,18 @@ const ProductFormPage: React.FC = () => {
               onChange={handleChange}
               required
               min="0"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>分类</label>
             <select
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
               required
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             >
               <option value="">请选择分类</option>
               {categories.map(category => (
@@ -171,90 +172,74 @@ const ProductFormPage: React.FC = () => {
             </select>
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>商品描述</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>图片URL</label>
             <input
               type="text"
               name="imageUrl"
               value={formData.imageUrl}
               onChange={handleChange}
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>上传图片</label>
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
           {formData.imageUrl && (
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={layout.marginBottom.sm}>
               <label style={{ display: 'block', marginBottom: '0.5rem' }}>图片预览</label>
               <img 
                 src={IMAGE_BASE_URL + formData.imageUrl} 
                 alt="预览" 
-                style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover', border: '1px solid #ced4da', borderRadius: '4px' }} 
+                style={imagePreview.container} 
               />
             </div>
           )}
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>状态</label>
             <select
               name="status"
               value={formData.status}
               onChange={handleChange}
               required
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             >
               <option value="ON_SALE">在售</option>
               <option value="OFF_SALE">下架</option>
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+          <div style={{ display: 'flex' as const, gap: '1rem', marginTop: '2rem' }}>
             <button
               type="submit"
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
+              style={buttons.primary}
             >
               {isEdit ? '更新商品' : '添加商品'}
             </button>
             <button
               type="button"
               onClick={() => navigate('/products')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
+              style={buttons.secondary}
             >
               取消
             </button>

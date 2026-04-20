@@ -1,4 +1,3 @@
-import { Order } from '../types';
 import { orderApi } from '../services/api';
 import { OrderDetailView, OrderDetailPresenter, OrderDetailState } from '../contracts';
 import { BasePresenterImpl } from './BasePresenterImpl';

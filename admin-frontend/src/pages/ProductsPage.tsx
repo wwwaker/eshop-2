@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Product, Category } from '../types';
 import { ProductsView, ProductsPresenter } from '../contracts';
 import { productsPresenter } from '../presenters';
+import { typography, tables, layout, colors, alerts, buttons, loading as loadingStyles, status, inputs } from '../styles';
 
 const IMAGE_BASE_URL = 'http://localhost:3000';
 
@@ -82,81 +83,48 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1>商品管理</h1>
+      <div style={{ ...layout.flexBetween, alignItems: 'center', ...layout.marginBottom.md }}>
+        <h1 style={typography.h1}>商品管理</h1>
         <Link 
           to="/products/add" 
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#007bff',
-            color: 'white',
-            borderRadius: '4px',
-            textDecoration: 'none',
-            fontSize: '0.9rem'
-          }}
+          style={buttons.add}
         >
           添加商品
         </Link>
       </div>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
 
-      <div style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        gap: '1rem', 
-        marginBottom: '1.5rem',
-        padding: '1rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px'
-      }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flex: '1', minWidth: '300px' }}>
+      <div style={layout.filterContainer}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex' as const, flex: '1', minWidth: '300px' }}>
           <input
             type="text"
-            placeholder="搜索商品名称..."
+            placeholder="搜索商品名称或描述..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               presenter.onSearchTermChange(e.target.value);
             }}
-            style={{
-              flex: '1',
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px 0 0 4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.search}
           />
           <button
             type="submit"
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: '1px solid #007bff',
-              borderRadius: '0 4px 4px 0',
-              cursor: 'pointer'
-            }}
+            style={buttons.search}
           >
             搜索
           </button>
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex' as const, alignItems: 'center', gap: '0.5rem' }}>
           <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>状态：</label>
           <select
             value={statusFilter}
             onChange={handleStatusFilter}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.select}
           >
             <option value="all">全部</option>
             <option value="ON_SALE">在售</option>
@@ -164,17 +132,12 @@ const ProductsPage: React.FC = () => {
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex' as const, alignItems: 'center', gap: '0.5rem' }}>
           <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>分类：</label>
           <select
             value={categoryFilter}
             onChange={handleCategoryFilter}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.select}
           >
             <option value="all">全部</option>
             {categories.map(category => (
@@ -187,116 +150,87 @@ const ProductsPage: React.FC = () => {
 
         <button
           onClick={handleReset}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: '1px solid #6c757d',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem'
-          }}
+          style={buttons.reset}
         >
           重置
         </button>
       </div>
 
       {loading ? (
-        <div>加载中...</div>
+        <div style={loadingStyles.container}>加载中...</div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={layout.overflowX.auto}>
+          <table style={tables.default}>
             <thead>
-              <tr style={{ backgroundColor: '#f8f9fa' }}>
+              <tr style={tables.header}>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('id')}
                 >
-                  ID <span style={{ color: sortField === 'id' ? '#007bff' : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  ID <span style={{ color: sortField === 'id' ? colors.primary : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>商品图片</th>
+                <th style={tables.headerCell}>商品图片</th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('name')}
                 >
-                  商品名称 <span style={{ color: sortField === 'name' ? '#007bff' : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  商品名称 <span style={{ color: sortField === 'name' ? colors.primary : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('price')}
                 >
-                  价格 <span style={{ color: sortField === 'price' ? '#007bff' : '#ccc', fontWeight: sortField === 'price' ? 'bold' : 'normal' }}>{sortField === 'price' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  价格 <span style={{ color: sortField === 'price' ? colors.primary : '#ccc', fontWeight: sortField === 'price' ? 'bold' : 'normal' }}>{sortField === 'price' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('stock')}
                 >
-                  库存 <span style={{ color: sortField === 'stock' ? '#007bff' : '#ccc', fontWeight: sortField === 'stock' ? 'bold' : 'normal' }}>{sortField === 'stock' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  库存 <span style={{ color: sortField === 'stock' ? colors.primary : '#ccc', fontWeight: sortField === 'stock' ? 'bold' : 'normal' }}>{sortField === 'stock' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('categoryName')}
                 >
-                  分类 <span style={{ color: sortField === 'categoryName' ? '#007bff' : '#ccc', fontWeight: sortField === 'categoryName' ? 'bold' : 'normal' }}>{sortField === 'categoryName' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  分类 <span style={{ color: sortField === 'categoryName' ? colors.primary : '#ccc', fontWeight: sortField === 'categoryName' ? 'bold' : 'normal' }}>{sortField === 'categoryName' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>状态</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>操作</th>
+                <th style={tables.headerCell}>状态</th>
+                <th style={tables.headerCell}>操作</th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{product.id}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                <tr key={product.id} style={tables.row}>
+                  <td style={tables.cell}>{product.id}</td>
+                  <td style={tables.cell}>
                     {product.imageUrl ? (
-                      <img src={IMAGE_BASE_URL + product.imageUrl} alt={product.name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                      <img src={IMAGE_BASE_URL + product.imageUrl} alt={product.name} style={layout.product.image} />
                     ) : (
-                      <div style={{ width: '50px', height: '50px', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={layout.product.noImage}>
                         无
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{product.name}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>¥{product.price.toFixed(2)}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{product.stock}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{product.categoryName}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
-                    <span style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.8rem',
-                      backgroundColor: product.status === 'ON_SALE' ? '#d4edda' : '#f8d7da',
-                      color: product.status === 'ON_SALE' ? '#155724' : '#721c24'
-                    }}>
+                  <td style={tables.cell}>{product.name}</td>
+                  <td style={tables.cell}>¥{product.price.toFixed(2)}</td>
+                  <td style={tables.cell}>{product.stock}</td>
+                  <td style={tables.cell}>{product.categoryName}</td>
+                  <td style={tables.cell}>
+                    <span style={product.status === 'ON_SALE' ? status.onSale : status.offSale}>
                       {product.status === 'ON_SALE' ? '在售' : '下架'}
                     </span>
                   </td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <td style={tables.cell}>
+                    <div style={{ display: 'flex' as const, gap: '0.5rem' }}>
                       <Link 
                         to={`/products/edit/${product.id}`} 
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          backgroundColor: '#6c757d',
-                          color: 'white',
-                          borderRadius: '4px',
-                          textDecoration: 'none',
-                          fontSize: '0.8rem'
-                        }}
+                        style={buttons.smallSecondary}
                       >
                         编辑
                       </Link>
                       <button
                         onClick={() => handleDelete(product.id)}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem'
-                        }}
+                        style={buttons.smallDanger}
                       >
                         删除
                       </button>

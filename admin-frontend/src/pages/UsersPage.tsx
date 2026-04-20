@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { User } from '../types';
 import { UsersView, UsersPresenter } from '../contracts';
 import { usersPresenter } from '../presenters';
+import { typography, tables, layout, colors, alerts, status, loading as loadingStyles, buttons, inputs } from '../styles';
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -67,66 +68,40 @@ const UsersPage: React.FC = () => {
 
   return (
     <div>
-      <h1>用户管理</h1>
+      <h1 style={typography.h1}>用户管理</h1>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
 
-      <div style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        gap: '1rem', 
-        marginBottom: '1.5rem',
-        padding: '1rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px'
-      }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flex: '1', minWidth: '300px' }}>
+      <div style={layout.filterContainer}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex' as const, flex: '1', minWidth: '300px' }}>
           <input
             type="text"
-            placeholder="搜索用户名、邮箱或手机号..."
+            placeholder="搜索用户名或邮箱..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               presenter.onSearchTermChange(e.target.value);
             }}
-            style={{
-              flex: '1',
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px 0 0 4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.search}
           />
           <button
             type="submit"
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: '1px solid #007bff',
-              borderRadius: '0 4px 4px 0',
-              cursor: 'pointer'
-            }}
+            style={buttons.search}
           >
             搜索
           </button>
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex' as const, alignItems: 'center', gap: '0.5rem' }}>
           <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>角色：</label>
           <select
             value={roleFilter}
             onChange={handleRoleFilter}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.select}
           >
             <option value="all">全部</option>
             <option value="ADMIN">管理员</option>
@@ -136,96 +111,67 @@ const UsersPage: React.FC = () => {
 
         <button
           onClick={handleReset}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: '1px solid #6c757d',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem'
-          }}
+          style={buttons.reset}
         >
           重置
         </button>
       </div>
 
       {loading ? (
-        <div>加载中...</div>
+        <div style={loadingStyles.container}>加载中...</div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={layout.overflowX.auto}>
+          <table style={tables.default}>
             <thead>
-              <tr style={{ backgroundColor: '#f8f9fa' }}>
+              <tr style={tables.header}>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('id')}
                 >
-                  ID <span style={{ color: sortField === 'id' ? '#007bff' : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  ID <span style={{ color: sortField === 'id' ? colors.primary : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('username')}
                 >
-                  用户名 <span style={{ color: sortField === 'username' ? '#007bff' : '#ccc', fontWeight: sortField === 'username' ? 'bold' : 'normal' }}>{sortField === 'username' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  用户名 <span style={{ color: sortField === 'username' ? colors.primary : '#ccc', fontWeight: sortField === 'username' ? 'bold' : 'normal' }}>{sortField === 'username' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>邮箱</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>手机号</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>地址</th>
+                <th style={tables.headerCell}>邮箱</th>
+                <th style={tables.headerCell}>手机号</th>
+                <th style={tables.headerCell}>地址</th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('role')}
                 >
-                  角色 <span style={{ color: sortField === 'role' ? '#007bff' : '#ccc', fontWeight: sortField === 'role' ? 'bold' : 'normal' }}>{sortField === 'role' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  角色 <span style={{ color: sortField === 'role' ? colors.primary : '#ccc', fontWeight: sortField === 'role' ? 'bold' : 'normal' }}>{sortField === 'role' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>操作</th>
+                <th style={tables.headerCell}>操作</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{user.id}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{user.username}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{user.email || '-'}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{user.phone || '-'}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{user.address || '-'}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
-                    <span style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.8rem',
-                      backgroundColor: user.role === 'ADMIN' ? '#17a2b8' : '#28a745',
-                      color: 'white'
-                    }}>
+                <tr key={user.id} style={tables.row}>
+                  <td style={tables.cell}>{user.id}</td>
+                  <td style={tables.cell}>{user.username}</td>
+                  <td style={tables.cell}>{user.email || '-'}</td>
+                  <td style={tables.cell}>{user.phone || '-'}</td>
+                  <td style={tables.cell}>{user.address || '-'}</td>
+                  <td style={tables.cell}>
+                    <span style={user.role === 'ADMIN' ? status.admin : status.user}>
                       {user.role === 'ADMIN' ? '管理员' : '普通用户'}
                     </span>
                   </td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <td style={tables.cell}>
+                    <div style={{ display: 'flex' as const, gap: '0.5rem' }}>
                       <Link 
                         to={`/users/edit/${user.id}`} 
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          backgroundColor: '#6c757d',
-                          color: 'white',
-                          borderRadius: '4px',
-                          textDecoration: 'none',
-                          fontSize: '0.8rem'
-                        }}
+                        style={buttons.smallSecondary}
                       >
                         编辑
                       </Link>
                       <button
                         onClick={() => handleDelete(user.id)}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem'
-                        }}
+                        style={buttons.smallDanger}
                       >
                         删除
                       </button>

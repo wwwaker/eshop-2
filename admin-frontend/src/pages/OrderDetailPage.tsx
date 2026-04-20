@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Order } from '../types';
 import { OrderDetailView, OrderDetailPresenter } from '../contracts';
 import { orderDetailPresenter } from '../presenters';
+import { typography, tables, layout, colors, status } from '../styles';
 
 /**
  * 订单详情页面
@@ -47,23 +48,23 @@ const OrderDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div>加载中...</div>;
+    return <div style={layout.loading.container}>加载中...</div>;
   }
 
   if (error || !order) {
-    return <div style={{ color: 'red' }}>{error || '订单不存在'}</div>;
+    return <div style={layout.error.container}>{error || '订单不存在'}</div>;
   }
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1>订单详情</h1>
+      <div style={{ ...layout.flexBetween, alignItems: 'center', ...layout.marginBottom.md }}>
+        <h1 style={typography.h1}>订单详情</h1>
         <button
           onClick={() => navigate('/orders')}
           style={{
             padding: '0.5rem 1rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
+            backgroundColor: colors.secondary,
+            color: colors.background,
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer',
@@ -74,20 +75,14 @@ const OrderDetailPage: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ marginBottom: '2rem', padding: '1rem', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-        <h2>订单信息</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+      <div style={{ ...layout.marginBottom.lg, padding: '1rem', border: `1px solid ${colors.border}`, borderRadius: '4px' }}>
+        <h2 style={typography.h2}>订单信息</h2>
+        <div style={{ display: 'grid' as const, gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
           <div>
             <p><strong>订单号：</strong>{order.orderNo}</p>
             <p><strong>总金额：</strong>¥{order.totalAmount.toFixed(2)}</p>
             <p><strong>订单状态：</strong>
-              <span style={{
-                padding: '0.25rem 0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                backgroundColor: presenter.getStatusColor(order.status),
-                color: 'white'
-              }}>
+              <span style={{ ...status.order, backgroundColor: presenter.getStatusColor(order.status) }}>
                 {presenter.getStatusText(order.status)}
               </span>
             </p>
@@ -103,31 +98,31 @@ const OrderDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <h2>商品列表</h2>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <h2 style={typography.h2}>商品列表</h2>
+      <div style={layout.overflowX.auto}>
+        <table style={tables.default}>
           <thead>
-            <tr style={{ backgroundColor: '#f8f9fa' }}>
-              <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>商品</th>
-              <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>单价</th>
-              <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>数量</th>
-              <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>小计</th>
+            <tr style={tables.header}>
+              <th style={tables.headerCell}>商品</th>
+              <th style={tables.headerCell}>单价</th>
+              <th style={tables.headerCell}>数量</th>
+              <th style={tables.headerCell}>小计</th>
             </tr>
           </thead>
           <tbody>
             {(order.items || []).map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <tr key={item.id} style={tables.row}>
+                <td style={tables.cell}>
+                  <div style={{ display: 'flex' as const, alignItems: 'center', gap: '1rem' }}>
                     {item.product?.imageUrl && !imageErrors[item.product.id] ? (
                       <img
                         src={item.product.imageUrl}
                         alt={item.productName}
                         onError={() => handleImageError(item.product!.id)}
-                        style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                        style={layout.orderItem.image}
                       />
                     ) : (
-                      <div style={{ width: '80px', height: '80px', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={layout.orderItem.noImage}>
                         无图片
                       </div>
                     )}
@@ -136,16 +131,16 @@ const OrderDetailPage: React.FC = () => {
                     </div>
                   </div>
                 </td>
-                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>¥{item.productPrice.toFixed(2)}</td>
-                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{item.quantity}</td>
-                <td style={{ padding: '0.75rem', border: '1px solid #dee2e6', fontWeight: 'bold' }}>¥{item.subtotal.toFixed(2)}</td>
+                <td style={tables.cell}>¥{item.productPrice.toFixed(2)}</td>
+                <td style={tables.cell}>{item.quantity}</td>
+                <td style={{ ...tables.cell, fontWeight: 'bold' }}>¥{item.subtotal.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr style={{ borderTop: '2px solid #dee2e6' }}>
-              <td colSpan={3} style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>总计：</td>
-              <td style={{ padding: '0.75rem', fontWeight: 'bold', color: '#dc3545' }}>¥{order.totalAmount.toFixed(2)}</td>
+            <tr style={{ borderTop: `2px solid ${colors.border}` }}>
+              <td colSpan={3} style={{ ...tables.cell, textAlign: 'right' as const, fontWeight: 'bold' }}>总计：</td>
+              <td style={{ ...tables.cell, fontWeight: 'bold', color: colors.danger }}>¥{order.totalAmount.toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>

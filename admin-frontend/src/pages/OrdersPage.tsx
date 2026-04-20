@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Order } from '../types';
 import { OrdersView, OrdersPresenter } from '../contracts';
 import { ordersPresenter } from '../presenters';
+import { typography, tables, layout, colors, alerts, status, loading as loadingStyles, buttons, inputs } from '../styles';
 
 const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -59,24 +60,16 @@ const OrdersPage: React.FC = () => {
 
   return (
     <div>
-      <h1>订单管理</h1>
+      <h1 style={typography.h1}>订单管理</h1>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
 
-      <div style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        gap: '1rem', 
-        marginBottom: '1.5rem',
-        padding: '1rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px'
-      }}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flex: '1', minWidth: '300px' }}>
+      <div style={layout.filterContainer}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex' as const, flex: '1', minWidth: '300px' }}>
           <input
             type="text"
             placeholder="搜索订单号或用户名..."
@@ -85,40 +78,22 @@ const OrdersPage: React.FC = () => {
               setSearchTerm(e.target.value);
               presenter.onSearchTermChange(e.target.value);
             }}
-            style={{
-              flex: '1',
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px 0 0 4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.search}
           />
           <button
             type="submit"
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: '1px solid #007bff',
-              borderRadius: '0 4px 4px 0',
-              cursor: 'pointer'
-            }}
+            style={buttons.search}
           >
             搜索
           </button>
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex' as const, alignItems: 'center', gap: '0.5rem' }}>
           <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>状态：</label>
           <select
             value={statusFilter}
             onChange={handleStatusFilter}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '0.9rem'
-            }}
+            style={inputs.select}
           >
             <option value="all">全部</option>
             <option value="PENDING">待处理</option>
@@ -131,82 +106,61 @@ const OrdersPage: React.FC = () => {
 
         <button
           onClick={handleReset}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: '1px solid #6c757d',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem'
-          }}
+          style={buttons.reset}
         >
           重置
         </button>
       </div>
 
       {loading ? (
-        <div>加载中...</div>
+        <div style={loadingStyles.container}>加载中...</div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={layout.overflowX.auto}>
+          <table style={tables.default}>
             <thead>
-              <tr style={{ backgroundColor: '#f8f9fa' }}>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>订单号</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>用户</th>
+              <tr style={tables.header}>
+                <th style={tables.headerCell}>订单号</th>
+                <th style={tables.headerCell}>用户</th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('totalAmount')}
                 >
-                  金额 <span style={{ color: sortField === 'totalAmount' ? '#007bff' : '#ccc', fontWeight: sortField === 'totalAmount' ? 'bold' : 'normal' }}>{sortField === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  金额 <span style={{ color: sortField === 'totalAmount' ? colors.primary : '#ccc', fontWeight: sortField === 'totalAmount' ? 'bold' : 'normal' }}>{sortField === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>状态</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>收货人</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>联系电话</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>收货地址</th>
+                <th style={tables.headerCell}>状态</th>
+                <th style={tables.headerCell}>收货人</th>
+                <th style={tables.headerCell}>联系电话</th>
+                <th style={tables.headerCell}>收货地址</th>
                 <th 
-                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  style={{ ...tables.headerCell, cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                   onClick={() => handleSort('createdAt')}
                 >
-                  创建时间 <span style={{ color: sortField === 'createdAt' ? '#007bff' : '#ccc', fontWeight: sortField === 'createdAt' ? 'bold' : 'normal' }}>{sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                  创建时间 <span style={{ color: sortField === 'createdAt' ? colors.primary : '#ccc', fontWeight: sortField === 'createdAt' ? 'bold' : 'normal' }}>{sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
                 </th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>操作</th>
+                <th style={tables.headerCell}>操作</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{order.orderNo}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{order.user?.username || ''}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>¥{order.totalAmount.toFixed(2)}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
-                    <span style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.8rem',
-                      backgroundColor: presenter.getStatusColor(order.status),
-                      color: 'white'
-                    }}>
+                <tr key={order.id} style={tables.row}>
+                  <td style={tables.cell}>{order.orderNo}</td>
+                  <td style={tables.cell}>{order.user?.username || ''}</td>
+                  <td style={tables.cell}>¥{order.totalAmount.toFixed(2)}</td>
+                  <td style={tables.cell}>
+                    <span style={{ ...status.order, backgroundColor: presenter.getStatusColor(order.status) }}>
                       {presenter.getStatusText(order.status)}
                     </span>
                   </td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{order.receiverName}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{order.receiverPhone}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{order.receiverAddress}</td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                  <td style={tables.cell}>{order.receiverName}</td>
+                  <td style={tables.cell}>{order.receiverPhone}</td>
+                  <td style={tables.cell}>{order.receiverAddress}</td>
+                  <td style={tables.cell}>
                     {new Date(order.createdAt).toLocaleString()}
                   </td>
-                  <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
+                  <td style={tables.cell}>
                     <Link 
                       to={`/orders/detail/${order.id}`} 
-                      style={{
-                        padding: '0.25rem 0.5rem',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        borderRadius: '4px',
-                        textDecoration: 'none',
-                        fontSize: '0.8rem'
-                      }}
+                      style={buttons.smallPrimary}
                     >
                       查看详情
                     </Link>

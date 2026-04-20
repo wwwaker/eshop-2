@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { colors, spacing } from '../styles';
 
 /**
  * 管理员系统布局组件
@@ -8,9 +9,9 @@ import Sidebar from '../components/Sidebar';
  */
 const AdminLayout: React.FC = () => {
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex' as const }}>
       <Sidebar />
-      <div style={{ flex: 1, padding: '2rem', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <div style={{ flex: 1, padding: spacing.xl, backgroundColor: colors.backgroundLight, minHeight: '100vh' }}>
         <Outlet />
       </div>
     </div>

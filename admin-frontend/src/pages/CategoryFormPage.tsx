@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Category } from '../types';
 import { CategoryFormView, CategoryFormPresenter } from '../contracts';
 import { categoryFormPresenter } from '../presenters';
+import { typography, layout, alerts, inputs, buttons, loading as loadingStyles } from '../styles';
 
 const CategoryFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -68,25 +69,25 @@ const CategoryFormPage: React.FC = () => {
 
   return (
     <div>
-      <h1>{isEdit ? '编辑分类' : '添加分类'}</h1>
+      <h1 style={typography.h1}>{isEdit ? '编辑分类' : '添加分类'}</h1>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
 
       {success && (
-        <div style={{ padding: '1rem', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', marginBottom: '1rem' }}>
+        <div style={alerts.success}>
           {success}
         </div>
       )}
 
       {loading ? (
-        <div>加载中...</div>
+        <div style={loadingStyles.container}>加载中...</div>
       ) : (
         <form onSubmit={handleSubmit} style={{ maxWidth: '600px' }}>
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>分类名称</label>
             <input
               type="text"
@@ -94,48 +95,32 @@ const CategoryFormPage: React.FC = () => {
               value={formData.name}
               onChange={handleChange}
               required
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={layout.marginBottom.sm}>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>分类描述</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+              style={{ ...inputs.default, width: '100%' }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+          <div style={{ display: 'flex' as const, gap: '1rem', marginTop: '2rem' }}>
             <button
               type="submit"
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
+              style={buttons.primary}
             >
               {isEdit ? '更新分类' : '添加分类'}
             </button>
             <button
               type="button"
               onClick={() => navigate('/categories')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
+              style={buttons.secondary}
             >
               取消
             </button>
