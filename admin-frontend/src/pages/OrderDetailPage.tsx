@@ -1,46 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-/**
- * 订单项类型定义
- * 包含订单中商品的详细信息，如商品ID、名称、价格、数量、小计等
- */
-interface OrderItem {
-  id: number;
-  orderId: number;
-  productId: number;
-  productName: string;
-  productPrice: number;
-  quantity: number;
-  subtotal: number;
-  product?: {
-    id: number;
-    name: string;
-    imageUrl: string;
-  };
-}
-
-/**
- * 订单类型定义
- * 包含订单的完整信息，如订单号、总金额、状态、收货信息、商品列表等
- */
-interface Order {
-  id: number;
-  orderNo: string;
-  userId: number;
-  totalAmount: number;
-  status: string;
-  receiverName: string;
-  receiverPhone: string;
-  receiverAddress: string;
-  createdAt: string;
-  updatedAt: string;
-  items: OrderItem[];
-  user?: {
-    username: string;
-  };
-}
+import { Order } from '../types';
+import { OrderDetailView, OrderDetailPresenter } from '../contracts';
+import { orderDetailPresenter } from '../presenters';
 
 /**
  * 订单详情页面
@@ -54,68 +16,34 @@ const OrderDetailPage: React.FC = () => {
   const [error, setError] = useState('');
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
+  const view: OrderDetailView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showOrder: (order: Order) => setOrder(order),
+    navigateToOrders: () => navigate('/orders'),
+    updateImageErrors: (errors: Record<string, boolean>) => setImageErrors(errors)
+  }), [navigate]);
+
+  const presenter: OrderDetailPresenter = orderDetailPresenter;
+
   useEffect(() => {
+    presenter.attachView(view);
     if (id) {
-      fetchOrder();
+      presenter.loadOrder(Number(id));
     }
-  }, [id]);
 
-  /**
-   * 获取订单详情
-   * 从后端API获取指定订单的详细信息
-   */
-  const fetchOrder = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`http://localhost:8080/api/admin/orders/${id}`);
-      setOrder(response.data);
-      setError('');
-    } catch (err: any) {
-      setError('获取订单详情失败');
-      console.error('Error fetching order:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * 获取订单状态的中文文本
-   * @param status 订单状态（英文）
-   * @returns 订单状态的中文文本
-   */
-  const getStatusText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      'PENDING': '待处理',
-      'PAID': '已支付',
-      'SHIPPED': '已发货',
-      'DELIVERED': '已送达',
-      'CANCELLED': '已取消'
+    return () => {
+      presenter.detachView();
     };
-    return statusMap[status] || status;
-  };
-
-  /**
-   * 获取订单状态对应的颜色
-   * @param status 订单状态
-   * @returns 对应的颜色值
-   */
-  const getStatusColor = (status: string) => {
-    const colorMap: Record<string, string> = {
-      'PENDING': '#ffc107',
-      'PAID': '#28a745',
-      'SHIPPED': '#17a2b8',
-      'DELIVERED': '#6c757d',
-      'CANCELLED': '#dc3545'
-    };
-    return colorMap[status] || '#6c757d';
-  };
+  }, [id, presenter, view]);
 
   /**
    * 处理图片加载错误
    * @param productId 商品ID
    */
   const handleImageError = (productId: number) => {
-    setImageErrors(prev => ({ ...prev, [productId]: true }));
+    presenter.handleImageError(productId);
   };
 
   if (loading) {
@@ -157,10 +85,10 @@ const OrderDetailPage: React.FC = () => {
                 padding: '0.25rem 0.5rem',
                 borderRadius: '4px',
                 fontSize: '0.8rem',
-                backgroundColor: getStatusColor(order.status),
+                backgroundColor: presenter.getStatusColor(order.status),
                 color: 'white'
               }}>
-                {getStatusText(order.status)}
+                {presenter.getStatusText(order.status)}
               </span>
             </p>
             <p><strong>用户：</strong>{order.user?.username || ''}</p>
@@ -187,7 +115,7 @@ const OrderDetailPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {order.items.map((item) => (
+            {(order.items || []).map((item) => (
               <tr key={item.id} style={{ borderBottom: '1px solid #dee2e6' }}>
                 <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

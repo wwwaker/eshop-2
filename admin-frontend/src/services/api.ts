@@ -3,7 +3,7 @@
  * 封装与后端管理员API的所有交互方法
  */
 import axios from 'axios';
-import { User, Category, Product, Order, ApiResponse, DashboardData } from '../types';
+import { User, Category, Product, Order, ApiResponse } from '../types';
 
 // API基础URL，可以根据环境配置修改为服务器的IP地址
 const API_BASE_URL = 'http://localhost:8080/api/admin';
@@ -16,6 +16,43 @@ const axiosInstance = axios.create({
   },
   withCredentials: true, // 携带凭证信息
 });
+
+// 响应拦截器，统一处理后端响应格式
+axiosInstance.interceptors.response.use(
+  (response) => {
+    const data = response.data;
+    // 如果响应已经是 ApiResponse 格式，直接返回
+    if (typeof data === 'object' && data !== null && 'success' in data) {
+      return response;
+    }
+    // 否则，将数据包装成 ApiResponse 格式
+    response.data = {
+      success: true,
+      data: data
+    };
+    return response;
+  },
+  (error) => {
+    // 错误处理
+    if (error.response) {
+      const errorData = error.response.data;
+      error.response.data = {
+        success: false,
+        error: errorData.message || errorData.error || '服务器错误',
+        data: null
+      };
+    } else {
+      error.response = {
+        data: {
+          success: false,
+          error: '网络错误，请检查网络连接',
+          data: null
+        }
+      };
+    }
+    return Promise.reject(error);
+  }
+);
 
 /**
  * 认证相关API
@@ -62,12 +99,8 @@ export const dashboardApi = {
    * @returns 仪表盘统计数据
    */
   getDashboardData: async () => {
-    const response = await axiosInstance.get<any>('/dashboard');
-    // 后端直接返回原始数据，需要包装成ApiResponse格式
-    return {
-      success: true,
-      data: response.data
-    };
+    const response = await axiosInstance.get<ApiResponse<any>>('/dashboard');
+    return response.data;
   },
 };
 
@@ -112,6 +145,26 @@ export const userApi = {
    */
   delete: async (id: number) => {
     const response = await axiosInstance.delete<ApiResponse<void>>(`/users/${id}`);
+    return response.data;
+  },
+  
+  /**
+   * 创建用户
+   * @param user 用户信息（不包含id、createdAt）
+   * @returns 创建的用户信息
+   */
+  create: async (user: Omit<User, 'id' | 'createdAt'>) => {
+    const response = await axiosInstance.post<ApiResponse<User>>('/users', user);
+    return response.data;
+  },
+
+  /**
+   * 获取用户列表（支持筛选、排序）
+   * @param queryParams 查询参数字符串
+   * @returns 用户列表
+   */
+  getAllWithFilters: async (queryParams: string) => {
+    const response = await axiosInstance.get<ApiResponse<User[]>>(`/users?${queryParams}`);
     return response.data;
   },
 };
@@ -183,6 +236,16 @@ export const productApi = {
     });
     return response.data;
   },
+
+  /**
+   * 获取商品列表（支持筛选、排序、分页）
+   * @param queryParams 查询参数字符串
+   * @returns 商品列表
+   */
+  getAllWithFilters: async (queryParams: string) => {
+    const response = await axiosInstance.get<ApiResponse<Product[]>>(`/products?${queryParams}`);
+    return response.data;
+  },
 };
 
 /**
@@ -238,6 +301,16 @@ export const categoryApi = {
     const response = await axiosInstance.delete<ApiResponse<void>>(`/categories/${id}`);
     return response.data;
   },
+
+  /**
+   * 获取分类列表（支持筛选、排序）
+   * @param queryParams 查询参数字符串
+   * @returns 分类列表
+   */
+  getAllWithFilters: async (queryParams: string) => {
+    const response = await axiosInstance.get<ApiResponse<Category[]>>(`/categories?${queryParams}`);
+    return response.data;
+  },
 };
 
 /**
@@ -273,4 +346,73 @@ export const orderApi = {
     const response = await axiosInstance.post<ApiResponse<Order>>(`/orders/${id}/ship`);
     return response.data;
   },
+
+  /**
+   * 获取订单列表（支持筛选、排序）
+   * @param queryParams 查询参数字符串
+   * @returns 订单列表
+   */
+  getAllWithFilters: async (queryParams: string) => {
+    const response = await axiosInstance.get<ApiResponse<Order[]>>(`/orders?${queryParams}`);
+    return response.data;
+  },
 };
+
+/**
+ * 图片上传API
+ * 提供文件上传相关的方法
+ */
+export const uploadApi = {
+  /**
+   * 上传图片
+   * @param file 图片文件
+   * @returns 上传结果，包含图片URL
+   */
+  uploadImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosInstance.post<any>('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+};
+
+/**
+ * 商品管理API（补充方法）
+ */
+// 直接扩展现有 productApi 对象
+Object.assign(productApi, {
+  /**
+   * 创建商品
+   * @param product 商品信息
+   * @returns 创建结果
+   */
+  create: async (product: any) => {
+    const response = await axiosInstance.post<ApiResponse<Product>>('/products', product);
+    return response.data;
+  },
+  
+  /**
+   * 更新商品
+   * @param id 商品ID
+   * @param product 商品信息
+   * @returns 更新结果
+   */
+  update: async (id: number, product: any) => {
+    const response = await axiosInstance.put<ApiResponse<Product>>(`/products/${id}`, product);
+    return response.data;
+  },
+  
+  /**
+   * 根据ID获取商品
+   * @param id 商品ID
+   * @returns 商品信息
+   */
+  getById: async (id: number) => {
+    const response = await axiosInstance.get<ApiResponse<Product>>(`/products/${id}`);
+    return response.data;
+  },
+});

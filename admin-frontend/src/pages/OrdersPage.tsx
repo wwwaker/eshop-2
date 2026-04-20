@@ -1,88 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { Order } from '../types';
+import { OrdersView, OrdersPresenter } from '../contracts';
+import { ordersPresenter } from '../presenters';
 
-/**
- * 订单类型定义
- * 包含订单的详细信息，如订单号、用户信息、金额、状态、收货信息等
- */
-interface Order {
-  id: number;
-  orderNo: string;
-  userId: number;
-  totalAmount: number;
-  status: string;
-  receiverName: string;
-  receiverPhone: string;
-  receiverAddress: string;
-  createdAt: string;
-  updatedAt: string;
-  user?: {
-    username: string;
-  };
-}
-
-/**
- * 订单管理页面
- * 展示所有订单列表，提供查看订单详情的功能
- */
 const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  const view: OrdersView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showOrders: (orders: Order[]) => setOrders(orders),
+    refreshOrders: () => ordersPresenter.loadOrders()
+  }), []);
+
+  const presenter: OrdersPresenter = ordersPresenter;
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    presenter.attachView(view);
+    presenter.loadOrders();
 
-  /**
-   * 获取订单列表
-   * 从后端API获取所有订单数据
-   */
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:8080/api/admin/orders');
-      setOrders(response.data);
-      setError('');
-    } catch (err: any) {
-      setError('获取订单列表失败');
-      console.error('Error fetching orders:', err);
-    } finally {
-      setLoading(false);
-    }
+    return () => {
+      presenter.detachView();
+    };
+  }, [presenter, view]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    presenter.searchOrders(searchTerm);
   };
 
-  /**
-   * 获取订单状态的中文文本
-   * @param status 订单状态（英文）
-   * @returns 订单状态的中文文本
-   */
-  const getStatusText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      'PENDING': '待处理',
-      'PAID': '已支付',
-      'SHIPPED': '已发货',
-      'DELIVERED': '已送达',
-      'CANCELLED': '已取消'
-    };
-    return statusMap[status] || status;
+  const handleSort = (field: string) => {
+    setSortField(field);
+    setSortOrder(field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc');
+    presenter.sortOrders(field, field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc');
   };
 
-  /**
-   * 获取订单状态对应的颜色
-   * @param status 订单状态
-   * @returns 对应的颜色值
-   */
-  const getStatusColor = (status: string) => {
-    const colorMap: Record<string, string> = {
-      'PENDING': '#ffc107',
-      'PAID': '#28a745',
-      'SHIPPED': '#17a2b8',
-      'DELIVERED': '#6c757d',
-      'CANCELLED': '#dc3545'
-    };
-    return colorMap[status] || '#6c757d';
+  const handleStatusFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const status = e.target.value;
+    setStatusFilter(status);
+    presenter.onStatusFilterChange(status);
+  };
+
+  const handleReset = () => {
+    setSearchTerm('');
+    setSortField('createdAt');
+    setSortOrder('desc');
+    setStatusFilter('all');
+    presenter.resetFilters();
   };
 
   return (
@@ -95,6 +67,84 @@ const OrdersPage: React.FC = () => {
         </div>
       )}
 
+      <div style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: '1rem', 
+        marginBottom: '1.5rem',
+        padding: '1rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '4px'
+      }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flex: '1', minWidth: '300px' }}>
+          <input
+            type="text"
+            placeholder="搜索订单号或用户名..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              presenter.onSearchTermChange(e.target.value);
+            }}
+            style={{
+              flex: '1',
+              padding: '0.5rem',
+              border: '1px solid #ced4da',
+              borderRadius: '4px 0 0 4px',
+              fontSize: '0.9rem'
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: '1px solid #007bff',
+              borderRadius: '0 4px 4px 0',
+              cursor: 'pointer'
+            }}
+          >
+            搜索
+          </button>
+        </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>状态：</label>
+          <select
+            value={statusFilter}
+            onChange={handleStatusFilter}
+            style={{
+              padding: '0.5rem',
+              border: '1px solid #ced4da',
+              borderRadius: '4px',
+              fontSize: '0.9rem'
+            }}
+          >
+            <option value="all">全部</option>
+            <option value="PENDING">待处理</option>
+            <option value="PAID">已支付</option>
+            <option value="SHIPPED">已发货</option>
+            <option value="DELIVERED">已送达</option>
+            <option value="CANCELLED">已取消</option>
+          </select>
+        </div>
+
+        <button
+          onClick={handleReset}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: '#6c757d',
+            color: 'white',
+            border: '1px solid #6c757d',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.9rem'
+          }}
+        >
+          重置
+        </button>
+      </div>
+
       {loading ? (
         <div>加载中...</div>
       ) : (
@@ -104,12 +154,22 @@ const OrdersPage: React.FC = () => {
               <tr style={{ backgroundColor: '#f8f9fa' }}>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>订单号</th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>用户</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>金额</th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('totalAmount')}
+                >
+                  金额 <span style={{ color: sortField === 'totalAmount' ? '#007bff' : '#ccc', fontWeight: sortField === 'totalAmount' ? 'bold' : 'normal' }}>{sortField === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>状态</th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>收货人</th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>联系电话</th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>收货地址</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>创建时间</th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('createdAt')}
+                >
+                  创建时间 <span style={{ color: sortField === 'createdAt' ? '#007bff' : '#ccc', fontWeight: sortField === 'createdAt' ? 'bold' : 'normal' }}>{sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>操作</th>
               </tr>
             </thead>
@@ -124,10 +184,10 @@ const OrdersPage: React.FC = () => {
                       padding: '0.25rem 0.5rem',
                       borderRadius: '4px',
                       fontSize: '0.8rem',
-                      backgroundColor: getStatusColor(order.status),
+                      backgroundColor: presenter.getStatusColor(order.status),
                       color: 'white'
                     }}>
-                      {getStatusText(order.status)}
+                      {presenter.getStatusText(order.status)}
                     </span>
                   </td>
                   <td style={{ padding: '0.75rem', border: '1px solid #dee2e6' }}>{order.receiverName}</td>

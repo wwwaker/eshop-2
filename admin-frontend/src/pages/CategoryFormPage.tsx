@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-}
+import { Category } from '../types';
+import { CategoryFormView, CategoryFormPresenter } from '../contracts';
+import { categoryFormPresenter } from '../presenters';
 
 const CategoryFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,25 +17,30 @@ const CategoryFormPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const view: CategoryFormView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showSuccess: (message: string) => setSuccess(message),
+    showCategory: (category: Category) => setFormData(category),
+    navigateToCategories: () => navigate('/categories'),
+    updateFormData: (data: Category) => setFormData(data)
+  }), [navigate]);
+
+  const presenter: CategoryFormPresenter = categoryFormPresenter;
+
   useEffect(() => {
-    if (isEdit) {
-      fetchCategory();
+    presenter.attachView(view);
+    if (isEdit && id) {
+      presenter.loadCategory(Number(id));
     } else {
       setLoading(false);
     }
-  }, [id, isEdit]);
 
-  const fetchCategory = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/api/admin/categories/${id}`);
-      setFormData(response.data);
-      setLoading(false);
-    } catch (err: any) {
-      setError('获取分类信息失败');
-      setLoading(false);
-      console.error('Error fetching category:', err);
-    }
-  };
+    return () => {
+      presenter.detachView();
+    };
+  }, [id, isEdit, presenter, view]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,17 +56,13 @@ const CategoryFormPage: React.FC = () => {
     setSuccess('');
 
     try {
-      if (isEdit) {
-        await axios.put(`http://localhost:8080/api/admin/categories/${id}`, formData);
-        setSuccess('分类更新成功');
+      if (isEdit && id) {
+        presenter.updateCategory(Number(id), formData as Category);
       } else {
-        await axios.post('http://localhost:8080/api/admin/categories', formData);
-        setSuccess('分类添加成功');
+        presenter.saveCategory(formData as Category);
       }
-      setTimeout(() => navigate('/categories'), 1500);
-    } catch (err: any) {
+    } catch (err) {
       setError(isEdit ? '分类更新失败' : '分类添加失败');
-      console.error('Error submitting category:', err);
     }
   };
 

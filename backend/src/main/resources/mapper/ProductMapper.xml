@@ -57,6 +57,38 @@
         LEFT JOIN categories c ON p.category_id = c.id
         ORDER BY p.id DESC
     </select>
+    <select id="findAllWithFilters" resultMap="BaseResultMap" parameterType="map">
+        SELECT p.*, c.name as category_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE 1=1
+        <if test="search != null and search != ''">
+            AND p.name LIKE CONCAT('%', #{search}, '%')
+        </if>
+        <if test="status != null and status != 'all'">
+            AND p.status = #{status}
+        </if>
+        <if test="categoryId != null">
+            AND p.category_id = #{categoryId}
+        </if>
+        <if test="sortField != null and sortField != ''">
+            ORDER BY 
+            <choose>
+                <when test="sortField == 'categoryName'">
+                    c.name
+                </when>
+                <otherwise>
+                    p.${sortField}
+                </otherwise>
+            </choose>
+            <if test="sortOrder != null and sortOrder != ''">
+                ${sortOrder}
+            </if>
+        </if>
+        <if test="sortField == null or sortField == ''">
+            ORDER BY p.id DESC
+        </if>
+    </select>
     <insert id="insert" parameterType="com.example.eshop.entity.Product"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO products (name, description, price, stock, category_id, image_url, status)

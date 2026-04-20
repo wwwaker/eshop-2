@@ -21,6 +21,7 @@ public interface OrderDao {
 
     // 管理员系统方法
     List<Order> findAll();
+    List<Order> findAllWithFilters(String search, String sortField, String sortOrder, String status);
     int countTodayOrders();
     int countTodayNewUsers();
     Map<String, Object> getTodaySales();

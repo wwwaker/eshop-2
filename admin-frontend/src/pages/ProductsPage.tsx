@@ -1,74 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { Product, Category } from '../types';
+import { ProductsView, ProductsPresenter } from '../contracts';
+import { productsPresenter } from '../presenters';
 
-/**
- * 商品类型定义
- * 包含商品的基本信息，如ID、名称、价格、库存、分类、图片和状态
- */
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  stock: number;
-  categoryId: number;
-  categoryName: string;
-  imageUrl: string;
-  status: string;
-}
-
-/**
- * 图片基础URL
- * 用于构建商品图片的完整URL
- */
 const IMAGE_BASE_URL = 'http://localhost:3000';
 
-/**
- * 商品管理页面
- * 展示商品列表，提供添加、编辑、删除商品的功能
- */
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<string>('id');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const view: ProductsView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showProducts: (products: Product[]) => setProducts(products),
+    showCategories: (categories: Category[]) => setCategories(categories),
+    showDeleteSuccess: () => alert('删除成功'),
+    showDeleteError: (message: string) => setError(message),
+    navigateToAddProduct: () => {},
+    navigateToEditProduct: (id: number) => {},
+    refreshProducts: () => productsPresenter.loadProducts()
+  }), []);
+
+  const presenter: ProductsPresenter = productsPresenter;
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    presenter.attachView(view);
+    presenter.loadCategories();
+    presenter.loadProducts();
 
-  /**
-   * 获取商品列表
-   * 从后端API获取所有商品数据
-   */
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('http://localhost:8080/api/admin/products');
-      setProducts(response.data);
-      setError('');
-    } catch (err: any) {
-      setError('获取商品列表失败');
-      console.error('Error fetching products:', err);
-    } finally {
-      setLoading(false);
+    return () => {
+      presenter.detachView();
+    };
+  }, [presenter, view]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    presenter.searchProducts(searchTerm);
+  };
+
+  const handleSort = (field: string) => {
+    setSortField(field);
+    setSortOrder(field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc');
+    presenter.sortProducts(field, field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc');
+  };
+
+  const handleStatusFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const status = e.target.value;
+    setStatusFilter(status);
+    presenter.onStatusFilterChange(status);
+  };
+
+  const handleCategoryFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const categoryId = e.target.value;
+    setCategoryFilter(categoryId);
+    presenter.onCategoryFilterChange(categoryId);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('确定删除吗？')) {
+      presenter.deleteProduct(id);
     }
   };
 
-  /**
-   * 删除商品
-   * 弹出确认对话框，确认后从后端删除商品
-   * @param id 商品ID
-   */
-  const handleDelete = async (id: number) => {
-    if (window.confirm('确定删除吗？')) {
-      try {
-        await axios.delete(`http://localhost:8080/api/admin/products/${id}`);
-        fetchProducts();
-      } catch (err: any) {
-        setError('删除商品失败');
-        console.error('Error deleting product:', err);
-      }
-    }
+  const handleReset = () => {
+    setSearchTerm('');
+    setSortField('id');
+    setSortOrder('desc');
+    setStatusFilter('all');
+    setCategoryFilter('all');
+    presenter.resetFilters();
   };
 
   return (
@@ -96,6 +105,102 @@ const ProductsPage: React.FC = () => {
         </div>
       )}
 
+      <div style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: '1rem', 
+        marginBottom: '1.5rem',
+        padding: '1rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '4px'
+      }}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flex: '1', minWidth: '300px' }}>
+          <input
+            type="text"
+            placeholder="搜索商品名称..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              presenter.onSearchTermChange(e.target.value);
+            }}
+            style={{
+              flex: '1',
+              padding: '0.5rem',
+              border: '1px solid #ced4da',
+              borderRadius: '4px 0 0 4px',
+              fontSize: '0.9rem'
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: '1px solid #007bff',
+              borderRadius: '0 4px 4px 0',
+              cursor: 'pointer'
+            }}
+          >
+            搜索
+          </button>
+        </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>状态：</label>
+          <select
+            value={statusFilter}
+            onChange={handleStatusFilter}
+            style={{
+              padding: '0.5rem',
+              border: '1px solid #ced4da',
+              borderRadius: '4px',
+              fontSize: '0.9rem'
+            }}
+          >
+            <option value="all">全部</option>
+            <option value="ON_SALE">在售</option>
+            <option value="OFF_SALE">下架</option>
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>分类：</label>
+          <select
+            value={categoryFilter}
+            onChange={handleCategoryFilter}
+            style={{
+              padding: '0.5rem',
+              border: '1px solid #ced4da',
+              borderRadius: '4px',
+              fontSize: '0.9rem'
+            }}
+          >
+            <option value="all">全部</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id.toString()}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={handleReset}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: '#6c757d',
+            color: 'white',
+            border: '1px solid #6c757d',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.9rem'
+          }}
+        >
+          重置
+        </button>
+      </div>
+
       {loading ? (
         <div>加载中...</div>
       ) : (
@@ -103,12 +208,37 @@ const ProductsPage: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#f8f9fa' }}>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>ID</th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('id')}
+                >
+                  ID <span style={{ color: sortField === 'id' ? '#007bff' : '#ccc', fontWeight: sortField === 'id' ? 'bold' : 'normal' }}>{sortField === 'id' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>商品图片</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>商品名称</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>价格</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>库存</th>
-                <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>分类</th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('name')}
+                >
+                  商品名称 <span style={{ color: sortField === 'name' ? '#007bff' : '#ccc', fontWeight: sortField === 'name' ? 'bold' : 'normal' }}>{sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('price')}
+                >
+                  价格 <span style={{ color: sortField === 'price' ? '#007bff' : '#ccc', fontWeight: sortField === 'price' ? 'bold' : 'normal' }}>{sortField === 'price' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('stock')}
+                >
+                  库存 <span style={{ color: sortField === 'stock' ? '#007bff' : '#ccc', fontWeight: sortField === 'stock' ? 'bold' : 'normal' }}>{sortField === 'stock' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
+                <th 
+                  style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                  onClick={() => handleSort('categoryName')}
+                >
+                  分类 <span style={{ color: sortField === 'categoryName' ? '#007bff' : '#ccc', fontWeight: sortField === 'categoryName' ? 'bold' : 'normal' }}>{sortField === 'categoryName' ? (sortOrder === 'asc' ? '▲' : '▼') : '▽'}</span>
+                </th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>状态</th>
                 <th style={{ padding: '0.75rem', border: '1px solid #dee2e6', textAlign: 'left' }}>操作</th>
               </tr>

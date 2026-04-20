@@ -54,6 +54,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<Product> findAllWithFilters(String search, String sortField, String sortOrder, String status, Long categoryId) {
+        return productDao.findAllWithFilters(search, sortField, sortOrder, status, categoryId);
+    }
+
+    @Override
     public void save(Product product) {
         if (product.getId() == null) {
             productDao.insert(product);

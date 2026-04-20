@@ -1,0 +1,127 @@
+
+import { orderApi } from '../services/api';
+import { OrdersView, OrdersPresenter, OrdersState } from '../contracts';
+import { BasePresenterImpl } from './BasePresenterImpl';
+
+export class OrdersPresenterImpl extends BasePresenterImpl<OrdersView> implements OrdersPresenter {
+  private state: OrdersState = {
+    orders: [],
+    loading: false,
+    error: '',
+    searchTerm: '',
+    sortField: 'createdAt',
+    sortOrder: 'desc',
+    statusFilter: 'all'
+  };
+
+  attachView(view: OrdersView): void {
+    super.attachView(view);
+  }
+
+  loadOrders(): void {
+    this.state.loading = true;
+    this.getView()?.showLoading();
+
+    const params = new URLSearchParams();
+    params.append('sortField', this.state.sortField);
+    params.append('sortOrder', this.state.sortOrder);
+
+    if (this.state.searchTerm) {
+      params.append('search', this.state.searchTerm);
+    }
+    if (this.state.statusFilter !== 'all') {
+      params.append('status', this.state.statusFilter);
+    }
+
+    orderApi.getAllWithFilters(params.toString())
+      .then(response => {
+        if (response.success && response.data) {
+          this.state.orders = response.data;
+          this.state.error = '';
+          this.getView()?.showOrders(response.data);
+        } else {
+          this.state.error = response.error || '获取订单列表失败';
+          this.getView()?.showError(this.state.error);
+        }
+      })
+      .catch((err: any) => {
+        this.state.error = '获取订单列表失败';
+        this.getView()?.showError(this.state.error);
+      })
+      .finally(() => {
+        this.state.loading = false;
+        this.getView()?.hideLoading();
+      });
+  }
+
+  searchOrders(searchTerm: string): void {
+    this.state.searchTerm = searchTerm;
+    this.loadOrders();
+  }
+
+  filterByStatus(status: string): void {
+    this.state.statusFilter = status;
+    this.loadOrders();
+  }
+
+  sortOrders(sortField: string, sortOrder: 'asc' | 'desc'): void {
+    this.state.sortField = sortField;
+    this.state.sortOrder = sortOrder;
+    this.loadOrders();
+  }
+
+  resetFilters(): void {
+    this.state.searchTerm = '';
+    this.state.sortField = 'createdAt';
+    this.state.sortOrder = 'desc';
+    this.state.statusFilter = 'all';
+    this.loadOrders();
+  }
+
+  onSearchTermChange(term: string): void {
+    this.state.searchTerm = term;
+  }
+
+  onStatusFilterChange(status: string): void {
+    this.state.statusFilter = status;
+    this.loadOrders();
+  }
+
+  onSortFieldChange(field: string): void {
+    if (this.state.sortField === field) {
+      this.state.sortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.state.sortField = field;
+      this.state.sortOrder = 'asc';
+    }
+    this.loadOrders();
+  }
+
+  getCurrentState(): OrdersState {
+    return { ...this.state };
+  }
+
+  getStatusText(status: string): string {
+    const statusMap: Record<string, string> = {
+      'PENDING': '待处理',
+      'PAID': '已支付',
+      'SHIPPED': '已发货',
+      'DELIVERED': '已送达',
+      'CANCELLED': '已取消'
+    };
+    return statusMap[status] || status;
+  }
+
+  getStatusColor(status: string): string {
+    const colorMap: Record<string, string> = {
+      'PENDING': '#ffc107',
+      'PAID': '#28a745',
+      'SHIPPED': '#17a2b8',
+      'DELIVERED': '#6c757d',
+      'CANCELLED': '#dc3545'
+    };
+    return colorMap[status] || '#6c757d';
+  }
+}
+
+export const ordersPresenter = new OrdersPresenterImpl();

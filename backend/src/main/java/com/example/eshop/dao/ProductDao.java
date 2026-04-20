@@ -20,6 +20,7 @@ public interface ProductDao {
 
     // 管理员系统方法
     List<Product> findAll();
+    List<Product> findAllWithFilters(String search, String sortField, String sortOrder, String status, Long categoryId);
     int insert(Product product);
     int update(Product product);
     int updateStock(Long id, int stock);

@@ -12,6 +12,7 @@ import java.util.List;
 @Mapper
 public interface CategoryDao {
     List<Category> findAll();
+    List<Category> findAllWithFilters(String search, String sortField, String sortOrder);
     Category findById(Long id);
 
     // 管理员系统方法

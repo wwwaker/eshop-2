@@ -117,6 +117,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<Order> findAllWithFilters(String search, String sortField, String sortOrder, String status) {
+        return orderDao.findAllWithFilters(search, sortField, sortOrder, status);
+    }
+
+    @Override
     public void shipOrder(Long orderId) {
         orderDao.updateStatus(orderId, "SHIPPED");
     }

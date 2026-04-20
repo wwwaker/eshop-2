@@ -38,6 +38,25 @@
     <select id="findAll" resultMap="BaseResultMap">
         SELECT * FROM users
     </select>
+    <select id="findAllWithFilters" resultMap="BaseResultMap" parameterType="map">
+        SELECT * FROM users
+        WHERE 1=1
+        <if test="search != null and search != ''">
+            AND (username LIKE CONCAT('%', #{search}, '%') OR email LIKE CONCAT('%', #{search}, '%') OR phone LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        <if test="role != null and role != 'all'">
+            AND role = #{role}
+        </if>
+        <if test="sortField != null and sortField != ''">
+            ORDER BY ${sortField}
+            <if test="sortOrder != null and sortOrder != ''">
+                ${sortOrder}
+            </if>
+        </if>
+        <if test="sortField == null or sortField == ''">
+            ORDER BY id DESC
+        </if>
+    </select>
     <select id="findById" resultMap="BaseResultMap">
         SELECT * FROM users WHERE id = #{id}
     </select>

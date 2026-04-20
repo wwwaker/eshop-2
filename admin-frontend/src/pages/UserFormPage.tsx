@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  phone: string;
-  address: string;
-  role: string;
-}
+import { User } from '../types';
+import { UserFormView, UserFormPresenter } from '../contracts';
+import { userFormPresenter } from '../presenters';
 
 const UserFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,31 +14,37 @@ const UserFormPage: React.FC = () => {
     email: '',
     phone: '',
     address: '',
-    role: 'USER'
+    role: 'USER',
+    password: ''
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const view: UserFormView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showSuccess: (message: string) => setSuccess(message),
+    showUser: (user: User) => setFormData(user),
+    navigateToUsers: () => navigate('/users'),
+    updateFormData: (data: User) => setFormData(data)
+  }), [navigate]);
+
+  const presenter: UserFormPresenter = userFormPresenter;
+
   useEffect(() => {
-    if (isEdit) {
-      fetchUser();
+    presenter.attachView(view);
+    if (isEdit && id) {
+      presenter.loadUser(Number(id));
     } else {
       setLoading(false);
     }
-  }, [id, isEdit]);
 
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/api/admin/users/${id}`);
-      setFormData(response.data);
-      setLoading(false);
-    } catch (err: any) {
-      setError('获取用户信息失败');
-      setLoading(false);
-      console.error('Error fetching user:', err);
-    }
-  };
+    return () => {
+      presenter.detachView();
+    };
+  }, [id, isEdit, presenter, view]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -61,17 +60,13 @@ const UserFormPage: React.FC = () => {
     setSuccess('');
 
     try {
-      if (isEdit) {
-        await axios.put(`http://localhost:8080/api/admin/users/${id}`, formData);
-        setSuccess('用户更新成功');
+      if (isEdit && id) {
+        presenter.updateUser(Number(id), formData as User);
       } else {
-        await axios.post('http://localhost:8080/api/admin/users', formData);
-        setSuccess('用户添加成功');
+        presenter.saveUser(formData as User);
       }
-      setTimeout(() => navigate('/users'), 1500);
-    } catch (err: any) {
+    } catch (err) {
       setError(isEdit ? '用户更新失败' : '用户添加失败');
-      console.error('Error submitting user:', err);
     }
   };
 
@@ -138,6 +133,18 @@ const UserFormPage: React.FC = () => {
               value={formData.address}
               onChange={handleChange}
               rows={4}
+              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>密码</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
               style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ced4da' }}
             />
           </div>

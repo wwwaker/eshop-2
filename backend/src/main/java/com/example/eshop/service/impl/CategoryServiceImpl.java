@@ -28,6 +28,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<Category> findAllWithFilters(String search, String sortField, String sortOrder) {
+        return categoryDao.findAllWithFilters(search, sortField, sortOrder);
+    }
+
+    @Override
     public Category findById(Long id) {
         return categoryDao.findById(id);
     }

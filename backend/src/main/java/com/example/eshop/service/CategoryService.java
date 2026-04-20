@@ -10,6 +10,7 @@ import java.util.List;
  */
 public interface CategoryService {
     List<Category> findAll();
+    List<Category> findAllWithFilters(String search, String sortField, String sortOrder);
     Category findById(Long id);
 
     // 管理员系统方法

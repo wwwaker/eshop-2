@@ -62,8 +62,13 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.findAll());
+    public ResponseEntity<List<Product>> getAllProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long categoryId) {
+        return ResponseEntity.ok(productService.findAllWithFilters(search, sortField, sortOrder, status, categoryId));
     }
 
     @GetMapping("/products/{id}")
@@ -91,8 +96,11 @@ public class AdminController {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.findAll());
+    public ResponseEntity<List<Category>> getAllCategories(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder) {
+        return ResponseEntity.ok(categoryService.findAllWithFilters(search, sortField, sortOrder));
     }
 
     @GetMapping("/categories/{id}")
@@ -120,8 +128,12 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.findAll());
+    public ResponseEntity<List<Order>> getAllOrders(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(orderService.findAllWithFilters(search, sortField, sortOrder, status));
     }
 
     @GetMapping("/orders/{id}")
@@ -136,8 +148,12 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.findAll());
+    public ResponseEntity<List<User>> getAllUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder,
+            @RequestParam(required = false) String role) {
+        return ResponseEntity.ok(userService.findAllWithFilters(search, sortField, sortOrder, role));
     }
 
     @GetMapping("/users/{id}")

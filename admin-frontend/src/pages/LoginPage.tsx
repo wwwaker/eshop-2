@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { User } from '../types';
+import { LoginView, LoginPresenter } from '../contracts';
+import { loginPresenter } from '../presenters';
 
 /**
  * 管理员登录页面
@@ -11,8 +14,39 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useUser();
+  const { login: contextLogin, user } = useUser();
   const navigate = useNavigate();
+
+  const view: LoginView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showSuccess: (message: string) => console.log(message),
+    navigateToDashboard: () => navigate('/dashboard'),
+    navigateToLogin: () => navigate('/login'),
+    updateFormData: (data: { username: string; password: string }) => {
+      setUsername(data.username);
+      setPassword(data.password);
+    },
+    setLoggedInUser: (user: User | null) => {
+      // 这里可以调用 contextLogin 来更新全局状态
+      if (user && user.username && user.password) {
+        contextLogin(user.username, user.password).catch(() => {
+          // 忽略错误，因为 Presenter 已经处理了错误
+        });
+      }
+    }
+  }), [navigate, contextLogin]);
+
+  const presenter: LoginPresenter = loginPresenter;
+
+  useEffect(() => {
+    presenter.attachView(view);
+
+    return () => {
+      presenter.detachView();
+    };
+  }, [presenter, view]);
 
   /**
    * 处理登录表单提交
@@ -22,20 +56,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
-
-    try {
-      const success = await login(username, password);
-      if (success) {
-        navigate('/dashboard');
-      } else {
-        setError('登录失败，请检查用户名和密码');
-      }
-    } catch (err) {
-      setError('登录失败，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
+    presenter.login(username, password);
   };
 
   return (

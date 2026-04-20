@@ -1,22 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  stock: number;
-  categoryId: number;
-  description: string;
-  imageUrl: string;
-  status: string;
-}
+import { Product, Category } from '../types';
+import { ProductFormView, ProductFormPresenter } from '../contracts';
+import { productFormPresenter } from '../presenters';
 
 const IMAGE_BASE_URL = 'http://localhost:3000';
 
@@ -40,36 +26,36 @@ const ProductFormPage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const view: ProductFormView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showSuccess: (message: string) => setSuccess(message),
+    showCategories: (categories: Category[]) => setCategories(categories),
+    showProduct: (product: Product) => setFormData(product),
+    navigateToProducts: () => navigate('/products'),
+    updateFormData: (data: Product) => setFormData(data),
+    updateCategories: (categories: Category[]) => setCategories(categories),
+    showImagePreview: (url: string) => setFormData(prev => ({ ...prev, imageUrl: url })),
+    showImageUploadError: (message: string) => setError(message),
+    showImageUploadSuccess: (url: string) => setFormData(prev => ({ ...prev, imageUrl: url }))
+  }), [navigate]);
+
+  const presenter: ProductFormPresenter = productFormPresenter;
+
   useEffect(() => {
-    fetchCategories();
-    if (isEdit) {
-      fetchProduct();
+    presenter.attachView(view);
+    presenter.loadCategories();
+    if (isEdit && id) {
+      presenter.loadProduct(Number(id));
     } else {
       setLoading(false);
     }
-  }, [id, isEdit]);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/categories');
-      setCategories(response.data);
-    } catch (err: any) {
-      setError('获取分类列表失败');
-      console.error('Error fetching categories:', err);
-    }
-  };
-
-  const fetchProduct = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/api/admin/products/${id}`);
-      setFormData(response.data);
-      setLoading(false);
-    } catch (err: any) {
-      setError('获取商品信息失败');
-      setLoading(false);
-      console.error('Error fetching product:', err);
-    }
-  };
+    return () => {
+      presenter.detachView();
+    };
+  }, [id, isEdit, presenter, view]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -93,37 +79,18 @@ const ProductFormPage: React.FC = () => {
     try {
       // 上传图片
       if (imageFile) {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', imageFile);
-        
-        const response = await axios.post('http://localhost:8080/api/upload', uploadFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        
-        if (response.data.success) {
-          setFormData(prev => ({
-            ...prev,
-            imageUrl: response.data.imageUrl
-          }));
-        } else {
-          setError('图片上传失败');
-          return;
-        }
+        presenter.uploadImage(imageFile);
+        // 图片上传成功后会通过 showImageUploadSuccess 回调更新 formData
       }
 
-      if (isEdit) {
-        await axios.put(`http://localhost:8080/api/admin/products/${id}`, formData);
-        setSuccess('商品更新成功');
+      // 提交商品信息
+      if (isEdit && id) {
+        presenter.updateProduct(Number(id), formData as Product);
       } else {
-        await axios.post('http://localhost:8080/api/admin/products', formData);
-        setSuccess('商品添加成功');
+        presenter.saveProduct(formData as Product);
       }
-      setTimeout(() => navigate('/products'), 1500);
-    } catch (err: any) {
+    } catch (err) {
       setError(isEdit ? '商品更新失败' : '商品添加失败');
-      console.error('Error submitting product:', err);
     }
   };
 

@@ -18,6 +18,7 @@ public interface UserDao {
 
     // 管理员系统方法
     List<User> findAll();
+    List<User> findAllWithFilters(String search, String sortField, String sortOrder, String role);
     User findById(Long id);
     int deleteById(Long id);
 }

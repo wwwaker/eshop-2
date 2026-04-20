@@ -82,6 +82,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> findAllWithFilters(String search, String sortField, String sortOrder, String role) {
+        return userDao.findAllWithFilters(search, sortField, sortOrder, role);
+    }
+
+    @Override
     public User findById(Long id) {
         return userDao.findById(id);
     }
