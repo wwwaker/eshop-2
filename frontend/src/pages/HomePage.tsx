@@ -13,6 +13,12 @@ const HomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [sortField, setSortField] = useState('id');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [pageSize, setPageSize] = useState(10);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -24,13 +30,17 @@ const HomePage: React.FC = () => {
     showCategories: (categories: Category[]) => setCategories(categories),
     updateSearchKeyword: (keyword: string) => setSearchKeyword(keyword),
     updateSelectedCategory: (categoryId: number | null) => setSelectedCategory(categoryId),
-    showImageError: (productId: number) => setImageErrors(prev => ({ ...prev, [productId]: true }))
+    showImageError: (productId: number) => setImageErrors(prev => ({ ...prev, [productId]: true })),
+    updatePagination: (page: number, totalPages: number, totalElements: number) => {
+      setPage(page);
+      setTotalPages(totalPages);
+      setTotalElements(totalElements);
+    }
   }), []);
 
   useEffect(() => {
     homePresenter.attachView(view);
     homePresenter.loadCategories();
-    homePresenter.loadProducts();
 
     return () => {
       homePresenter.detachView();
@@ -39,30 +49,24 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
+    const categoryId = searchParams.get('category');
+    
     if (urlSearch) {
       setSearchKeyword(urlSearch);
       setSelectedCategory(null);
+      homePresenter.searchProducts(urlSearch);
+    } else if (categoryId) {
+      const catId = parseInt(categoryId);
+      setSelectedCategory(catId);
+      homePresenter.filterByCategory(catId);
     } else {
       setSearchKeyword('');
-    }
-
-    const categoryId = searchParams.get('category');
-    if (categoryId) {
-      setSelectedCategory(parseInt(categoryId));
-    } else {
       setSelectedCategory(null);
+      // 确保重置HomePresenter中的状态
+      homePresenter.filterByCategory(null);
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (selectedCategory) {
-      homePresenter.filterByCategory(selectedCategory);
-    } else if (searchKeyword) {
-      homePresenter.searchProducts(searchKeyword);
-    } else {
-      homePresenter.loadProducts();
-    }
-  }, [selectedCategory, searchKeyword]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +144,44 @@ const HomePage: React.FC = () => {
 
         <div style={layout.mainContent}>
           <h2 style={typography.h2}>{selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : '全部商品'}</h2>
+          
+          {/* 排序和分页控制 */}
+          <div style={layout.sortControl}>
+            <div style={layout.sortControlGroup}>
+              <span style={{ fontSize: '14px' }}>排序方式:</span>
+              <select
+                value={`${sortField}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortField(field);
+                  setSortOrder(order);
+                  homePresenter.onSortChange(field, order);
+                }}
+                style={layout.sortSelect}
+              >
+                <option value="id-desc">最新上架</option>
+                <option value="price-asc">价格从低到高</option>
+                <option value="price-desc">价格从高到低</option>
+              </select>
+            </div>
+            <div style={layout.sortControlGroup}>
+              <span style={{ fontSize: '14px' }}>每页显示:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  const size = parseInt(e.target.value);
+                  setPageSize(size);
+                  homePresenter.onPageSizeChange(size);
+                }}
+                style={layout.sortSelect}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+          
           <div style={containers.productGrid}>
             {products.map((product) => (
               <div key={product.id} style={containers.productCard} onMouseEnter={(e) => {
@@ -174,6 +216,53 @@ const HomePage: React.FC = () => {
                 </Link>
               </div>
             ))}
+          </div>
+          
+          {/* 分页控件 */}
+          <div style={layout.pagination}>
+            <button
+              onClick={() => homePresenter.onPageChange(1)}
+              disabled={page === 1}
+              style={{
+                ...layout.paginationButton,
+                ...(page === 1 ? layout.paginationButtonDisabled : {})
+              }}
+            >
+              首页
+            </button>
+            <button
+              onClick={() => homePresenter.onPageChange(page - 1)}
+              disabled={page === 1}
+              style={{
+                ...layout.paginationButton,
+                ...(page === 1 ? layout.paginationButtonDisabled : {})
+              }}
+            >
+              上一页
+            </button>
+            <span style={layout.paginationInfo}>
+              第 {page} 页，共 {totalPages} 页，{totalElements} 条商品
+            </span>
+            <button
+              onClick={() => homePresenter.onPageChange(page + 1)}
+              disabled={page === totalPages}
+              style={{
+                ...layout.paginationButton,
+                ...(page === totalPages ? layout.paginationButtonDisabled : {})
+              }}
+            >
+              下一页
+            </button>
+            <button
+              onClick={() => homePresenter.onPageChange(totalPages)}
+              disabled={page === totalPages}
+              style={{
+                ...layout.paginationButton,
+                ...(page === totalPages ? layout.paginationButtonDisabled : {})
+              }}
+            >
+              末页
+            </button>
           </div>
         </div>
       </div>

@@ -97,3 +97,15 @@ export interface Order {
   items: OrderItem[];
   user: User;
 }
+
+/**
+ * 分页响应类型
+ * 用于处理后端返回的分页数据
+ */
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+}

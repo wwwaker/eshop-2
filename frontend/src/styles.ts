@@ -523,4 +523,43 @@ export const layout = {
   mainContent: {
     flex: 1,
   },
+  sortControl: {
+    display: 'flex' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: spacing.md,
+  },
+  sortControlGroup: {
+    display: 'flex' as const,
+    alignItems: 'center' as const,
+    gap: spacing.md,
+  },
+  sortSelect: {
+    padding: '4px 8px',
+    borderRadius: borders.radius.sm,
+    border: `${borders.thin} ${colors.border}`,
+    fontSize: '14px',
+  },
+  pagination: {
+    display: 'flex' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  paginationButton: {
+    padding: '6px 12px',
+    borderRadius: borders.radius.sm,
+    border: `${borders.thin} ${colors.border}`,
+    backgroundColor: 'white',
+    cursor: 'pointer' as const,
+    fontSize: '14px',
+  },
+  paginationButtonDisabled: {
+    backgroundColor: colors.light,
+    cursor: 'not-allowed' as const,
+  },
+  paginationInfo: {
+    fontSize: '14px',
+  },
 };

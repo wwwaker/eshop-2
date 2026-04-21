@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 商品控制器
@@ -50,5 +51,18 @@ public class ProductController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Map<String, Object>> getProductsWithPagination(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) String sortOrder,
+            @RequestParam(required = false) Long categoryId) {
+        // 对于商城前端，只显示在售商品
+        String status = "ON_SALE";
+        return ResponseEntity.ok(productService.findAllWithPagination(page, size, search, sortField, sortOrder, status, categoryId));
     }
 }

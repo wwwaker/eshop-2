@@ -72,6 +72,18 @@ export const productApi = {
     const response = await api.get(`/products/${id}`);
     return response.data as Product;
   },
+  getPaginated: async (page: number, size: number, search?: string, sortField?: string, sortOrder?: string, categoryId?: number) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    if (search) params.append('search', search);
+    if (sortField) params.append('sortField', sortField);
+    if (sortOrder) params.append('sortOrder', sortOrder);
+    if (categoryId) params.append('categoryId', categoryId.toString());
+    
+    const response = await api.get(`/products/paginated?${params.toString()}`);
+    return response.data;
+  },
 };
 
 /**
