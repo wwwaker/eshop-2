@@ -41,7 +41,7 @@ const ProfilePage: React.FC = () => {
     return () => {
       profilePresenter.detachView();
     };
-  }, [view]);
+  }, [view, profilePresenter]);
 
   useEffect(() => {
     if (!isAuthenticated) {

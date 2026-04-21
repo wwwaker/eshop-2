@@ -29,7 +29,7 @@ const OrderDetailPage: React.FC = () => {
     return () => {
       orderDetailPresenter.detachView();
     };
-  }, [view]);
+  }, [view, orderDetailPresenter]);
 
   useEffect(() => {
     if (isAuthenticated && id) {

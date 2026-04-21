@@ -35,7 +35,7 @@ const HomePage: React.FC = () => {
     return () => {
       homePresenter.detachView();
     };
-  }, [view]);
+  }, [view, homePresenter]);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');

@@ -37,7 +37,7 @@ const ProductDetailPage: React.FC = () => {
     return () => {
       productDetailPresenter.detachView();
     };
-  }, [view]);
+  }, [view, productDetailPresenter]);
 
   useEffect(() => {
     if (id) {

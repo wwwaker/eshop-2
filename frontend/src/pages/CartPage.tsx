@@ -35,7 +35,7 @@ const CartPage: React.FC = () => {
     return () => {
       cartPresenter.detachView();
     };
-  }, [view]);
+  }, [view, cartPresenter]);
 
   useEffect(() => {
     if (isAuthenticated && user) {

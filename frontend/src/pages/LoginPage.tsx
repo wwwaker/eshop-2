@@ -29,17 +29,12 @@ const LoginPage: React.FC = () => {
   }), [navigate, setUser]);
 
   useEffect(() => {
-    view.showLoading();
-    view.hideLoading();
-  }, []);
-
-  useEffect(() => {
     loginPresenter.attachView(view);
 
     return () => {
       loginPresenter.detachView();
     };
-  }, [view]);
+  }, [view, loginPresenter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

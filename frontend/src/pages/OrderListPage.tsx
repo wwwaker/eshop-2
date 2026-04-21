@@ -28,7 +28,7 @@ const OrderListPage: React.FC = () => {
     return () => {
       orderListPresenter.detachView();
     };
-  }, [view]);
+  }, [view, orderListPresenter]);
 
   useEffect(() => {
     if (isAuthenticated && user) {

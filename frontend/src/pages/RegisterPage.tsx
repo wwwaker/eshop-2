@@ -31,7 +31,7 @@ const RegisterPage: React.FC = () => {
     return () => {
       registerPresenter.detachView();
     };
-  }, [view]);
+  }, [view, registerPresenter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
