@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { categoryApi } from '../services/api';
 import { Category } from '../types';
+import { colors, spacing, layout, buttons, inputs, shadows, borders } from '../styles';
 
 /**
  * 导航栏组件
@@ -51,19 +52,25 @@ const Navbar: React.FC = () => {
   return (
     <>
       <nav style={{
-        backgroundColor: '#343a40',
-        color: 'white',
-        padding: '1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
+        backgroundColor: colors.dark,
+        color: colors.background,
+        padding: spacing.md,
+        ...layout.flexBetween,
         alignItems: 'center'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.2rem', fontWeight: 'bold' }}>
+        <div style={{ ...layout.flex.row, alignItems: 'center', gap: spacing.xl }}>
+          <Link to="/" style={{ color: colors.background, textDecoration: 'none' as const, fontSize: '1.2rem', fontWeight: 'bold' as const }}>
             EShop
           </Link>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <Link to="/" style={{ color: 'white', textDecoration: 'none', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+          <div style={{ ...layout.flex.row, gap: spacing.md }}>
+            <Link to="/" style={{
+              color: colors.background,
+              textDecoration: 'none' as const,
+              padding: spacing.sm,
+              borderRadius: borders.radius.sm,
+              transition: 'background-color 0.3s'
+            }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
               首页
             </Link>
             <div style={{ position: 'relative' }}>
@@ -74,15 +81,15 @@ const Navbar: React.FC = () => {
                 }}
                 style={{
                   backgroundColor: 'transparent',
-                  color: 'white',
+                  color: colors.background,
                   border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.5rem',
+                  cursor: 'pointer' as const,
+                  padding: spacing.sm,
                   fontSize: '1rem',
-                  display: 'flex',
+                  ...layout.flex.row,
                   alignItems: 'center',
-                  gap: '0.25rem',
-                  borderRadius: '4px',
+                  gap: spacing.xs,
+                  borderRadius: borders.radius.sm,
                   transition: 'background-color 0.3s'
                 }}
                 onMouseEnter={(e) => {
@@ -102,7 +109,7 @@ const Navbar: React.FC = () => {
                 <span style={{ 
                   transition: 'transform 0.3s',
                   fontSize: '0.8rem',
-                  marginLeft: '0.25rem'
+                  marginLeft: spacing.xs
                 }}>{isCategoryClicked ? '▲' : '▼'}</span>
               </button>
               {showCategories && (
@@ -111,13 +118,13 @@ const Navbar: React.FC = () => {
                     position: 'absolute',
                     top: '100%',
                     left: 0,
-                    backgroundColor: '#343a40',
-                    border: '1px solid #495057',
-                    borderRadius: '4px',
-                    padding: '0.5rem',
+                    backgroundColor: colors.dark,
+                    border: `1px solid #495057`,
+                    borderRadius: borders.radius.sm,
+                    padding: spacing.sm,
                     minWidth: '150px',
                     zIndex: 1000,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                    boxShadow: shadows.sm
                   }}
                   onMouseEnter={() => {
                     if (!isCategoryClicked) {
@@ -130,7 +137,7 @@ const Navbar: React.FC = () => {
                     }
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+                  <div style={{ ...layout.flexBetween, marginBottom: spacing.sm }}>
                     <button
                       onClick={() => {
                         setIsCategoryClicked(false);
@@ -138,12 +145,12 @@ const Navbar: React.FC = () => {
                       }}
                       style={{
                         backgroundColor: 'transparent',
-                        color: 'white',
+                        color: colors.background,
                         border: 'none',
-                        cursor: 'pointer',
+                        cursor: 'pointer' as const,
                         fontSize: '0.8rem',
-                        padding: '0.2rem',
-                        borderRadius: '4px',
+                        padding: spacing.xs,
+                        borderRadius: borders.radius.sm,
                         transition: 'background-color 0.3s'
                       }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
@@ -152,18 +159,18 @@ const Navbar: React.FC = () => {
                     </button>
                   </div>
                   {categories.map((category) => (
-                    <div key={category.id} style={{ marginBottom: '0.5rem' }}>
+                    <div key={category.id} style={{ marginBottom: spacing.sm }}>
                       <button
                         onClick={() => handleCategoryClick(category.id)}
                         style={{
                           width: '100%',
-                          textAlign: 'left',
+                          textAlign: 'left' as const,
                           backgroundColor: 'transparent',
-                          color: 'white',
+                          color: colors.background,
                           border: 'none',
-                          cursor: 'pointer',
-                          padding: '0.3rem',
-                          borderRadius: '4px',
+                          cursor: 'pointer' as const,
+                          padding: spacing.xs,
+                          borderRadius: borders.radius.sm,
                           transition: 'background-color 0.3s'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
@@ -178,55 +185,107 @@ const Navbar: React.FC = () => {
             </div>
             {isAuthenticated && (
               <>
-                <Link to="/cart" style={{ color: 'white', textDecoration: 'none', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <Link to="/cart" style={{
+                  color: colors.background,
+                  textDecoration: 'none' as const,
+                  padding: spacing.sm,
+                  borderRadius: borders.radius.sm,
+                  transition: 'background-color 0.3s'
+                }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   购物车
                 </Link>
-                <Link to="/orders" style={{ color: 'white', textDecoration: 'none', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <Link to="/orders" style={{
+                  color: colors.background,
+                  textDecoration: 'none' as const,
+                  padding: spacing.sm,
+                  borderRadius: borders.radius.sm,
+                  transition: 'background-color 0.3s'
+                }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   订单
                 </Link>
-                <Link to="/profile" style={{ color: 'white', textDecoration: 'none', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <Link to="/profile" style={{
+                  color: colors.background,
+                  textDecoration: 'none' as const,
+                  padding: spacing.sm,
+                  borderRadius: borders.radius.sm,
+                  transition: 'background-color 0.3s'
+                }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   个人中心
                 </Link>
               </>
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <form onSubmit={handleSearch} style={{ display: 'flex', maxWidth: '300px' }}>
+        <div style={{ ...layout.flex.row, alignItems: 'center', gap: spacing.md }}>
+          <form onSubmit={handleSearch} style={{ ...layout.flex.row, maxWidth: '300px' }}>
             <input
               type="text"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="搜索商品..."
-              style={{ padding: '0.3rem', borderRadius: '4px 0 0 4px', border: 'none' }}
+              style={{
+                padding: spacing.sm,
+                borderRadius: '4px 0 0 4px',
+                border: 'none',
+                height: '36px',
+                boxSizing: 'border-box'
+              }}
             />
-            <button type="submit" style={{ padding: '0 0.6rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '0 4px 4px 0' }}>
+            <button type="submit" style={{
+              padding: '0 0.6rem',
+              backgroundColor: colors.primary,
+              color: colors.background,
+              border: 'none',
+              borderRadius: '0 4px 4px 0',
+              cursor: 'pointer' as const,
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               搜索
             </button>
           </form>
           {isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ ...layout.flex.row, alignItems: 'center', gap: spacing.md }}>
               <span>欢迎, {user?.username}</span>
               <button
                 onClick={handleLogout}
                 style={{
                   padding: '0.3rem 0.6rem',
                   backgroundColor: 'transparent',
-                  color: 'white',
-                  border: '1px solid white',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
+                  color: colors.background,
+                  border: `1px solid ${colors.background}`,
+                  borderRadius: borders.radius.sm,
+                  cursor: 'pointer' as const
                 }}
               >
                 退出登录
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <Link to="/login" style={{ color: 'white', textDecoration: 'none', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+            <div style={{ ...layout.flex.row, gap: spacing.md }}>
+              <Link to="/login" style={{
+                color: colors.background,
+                textDecoration: 'none' as const,
+                padding: spacing.sm,
+                borderRadius: borders.radius.sm,
+                transition: 'background-color 0.3s'
+              }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                 登录
               </Link>
-              <Link to="/register" style={{ color: 'white', textDecoration: 'none', padding: '0.5rem', borderRadius: '4px', transition: 'background-color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+              <Link to="/register" style={{
+                color: colors.background,
+                textDecoration: 'none' as const,
+                padding: spacing.sm,
+                borderRadius: borders.radius.sm,
+                transition: 'background-color 0.3s'
+              }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                 注册
               </Link>
             </div>

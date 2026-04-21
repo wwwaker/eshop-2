@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { userApi } from '../services/api';
+import { RegisterView } from '../contracts';
+import { registerPresenter } from '../presenters';
+import { containers, typography, inputs, buttons, alerts, spacing } from '../styles';
 
-/**
- * 注册页面组件
- * 处理新用户注册功能，包括用户名、密码、邮箱、手机号和收货地址的验证和提交
- */
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,60 +16,46 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const view: RegisterView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showSuccess: (message: string) => setSuccess(message),
+    navigateToLogin: () => navigate('/login'),
+    updateFormData: () => {}
+  }), [navigate]);
+
+  useEffect(() => {
+    registerPresenter.attachView(view);
+
+    return () => {
+      registerPresenter.detachView();
+    };
+  }, [view]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
-    if (password !== confirmPassword) {
-      setError('两次密码输入不一致');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('密码长度至少为6位');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await userApi.register({
-        username,
-        password,
-        email,
-        phone,
-        address
-      });
-      if (response.success) {
-        setSuccess('注册成功，即将跳转到登录页面...');
-        setTimeout(() => navigate('/login'), 1500);
-      } else {
-        setError(response.error || '注册失败');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.error || '注册失败，请重试');
-    } finally {
-      setLoading(false);
-    }
+    registerPresenter.register({ username, password, email, phone, address });
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '2rem' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>用户注册</h2>
+    <div style={containers.registerContainer}>
+      <h2 style={{ ...typography.h2, ...typography.textCenter }}>用户注册</h2>
       {error && (
-        <div style={{ color: '#dc3545', backgroundColor: '#f8d7da', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', border: '1px solid #f5c6cb' }}>
+        <div style={alerts.error}>
           {error}
         </div>
       )}
       {success && (
-        <div style={{ color: '#155724', backgroundColor: '#d4edda', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', border: '1px solid #c3e6cb' }}>
+        <div style={alerts.success}>
           {success}
         </div>
       )}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="username" style={{ fontWeight: '500' }}>用户名</label>
+      <form onSubmit={handleSubmit} style={containers.form}>
+        <div style={containers.formGroup}>
+          <label htmlFor="username" style={typography.label}>用户名</label>
           <input
             type="text"
             id="username"
@@ -81,12 +65,12 @@ const RegisterPage: React.FC = () => {
             minLength={3}
             maxLength={20}
             placeholder="请输入用户名"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="password" style={{ fontWeight: '500' }}>密码</label>
+        <div style={containers.formGroup}>
+          <label htmlFor="password" style={typography.label}>密码</label>
           <input
             type="password"
             id="password"
@@ -95,12 +79,12 @@ const RegisterPage: React.FC = () => {
             required
             minLength={6}
             placeholder="请输入密码（至少6位）"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="confirmPassword" style={{ fontWeight: '500' }}>确认密码</label>
+        <div style={containers.formGroup}>
+          <label htmlFor="confirmPassword" style={typography.label}>确认密码</label>
           <input
             type="password"
             id="confirmPassword"
@@ -109,12 +93,12 @@ const RegisterPage: React.FC = () => {
             required
             minLength={6}
             placeholder="请再次输入密码"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="email" style={{ fontWeight: '500' }}>邮箱</label>
+        <div style={containers.formGroup}>
+          <label htmlFor="email" style={typography.label}>邮箱</label>
           <input
             type="email"
             id="email"
@@ -122,12 +106,12 @@ const RegisterPage: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="请输入邮箱"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="phone" style={{ fontWeight: '500' }}>手机号</label>
+        <div style={containers.formGroup}>
+          <label htmlFor="phone" style={typography.label}>手机号</label>
           <input
             type="tel"
             id="phone"
@@ -135,41 +119,41 @@ const RegisterPage: React.FC = () => {
             onChange={(e) => setPhone(e.target.value)}
             required
             placeholder="请输入手机号"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+            style={inputs.default}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="address" style={{ fontWeight: '500' }}>收货地址</label>
+        <div style={containers.formGroup}>
+          <label htmlFor="address" style={typography.label}>收货地址</label>
           <textarea
             id="address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             rows={3}
             placeholder="请输入收货地址"
-            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd', resize: 'vertical' }}
+            style={inputs.textarea}
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          style={{
-            padding: '0.75rem',
-            backgroundColor: loading ? '#6c757d' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '1rem',
-            fontWeight: '500',
-            marginTop: '0.5rem'
+          style={loading ? buttons.disabled : buttons.primary}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              Object.assign(e.currentTarget.style, buttons.primaryHover);
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = '';
+            }
           }}
         >
           {loading ? '注册中...' : '注册'}
         </button>
       </form>
-      <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+      <div style={{ marginTop: spacing.lg, ...typography.textCenter }}>
         <span style={{ color: '#666' }}>已有账号？</span>
         <Link to="/login" style={{ color: '#007bff', textDecoration: 'none', fontWeight: '500' }}>立即登录</Link>
       </div>

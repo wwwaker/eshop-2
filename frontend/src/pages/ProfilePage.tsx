@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userApi } from '../services/api';
 import { User } from '../types';
+import { ProfileView } from '../contracts';
+import { profilePresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
+import { containers, typography, inputs, buttons, alerts, spacing } from '../styles';
 
-/**
- * 个人中心页面组件
- * 展示和修改用户的个人信息，包括邮箱、手机号和收货地址
- */
 const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, updateUser } = useUser();
   const [formData, setFormData] = useState({
@@ -17,7 +15,33 @@ const ProfilePage: React.FC = () => {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const view: ProfileView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (msg: string) => setError(msg),
+    showSuccess: (msg: string) => setMessage(msg),
+    showUser: (user: User) => {
+      setFormData({
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || ''
+      });
+    },
+    updateFormData: (data: { email: string; phone: string; address: string }) => {
+      setFormData(data);
+    }
+  }), []);
+
+  useEffect(() => {
+    profilePresenter.attachView(view);
+
+    return () => {
+      profilePresenter.detachView();
+    };
+  }, [view]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -45,113 +69,96 @@ const ProfilePage: React.FC = () => {
     setError('');
     setMessage('');
 
-    try {
-      const response = await userApi.updateProfile({
-        id: user!.id,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address
-      });
-      if (response.success) {
-        setMessage('保存成功');
-        if (updateUser) {
-          updateUser({
-            ...user!,
-            email: formData.email,
-            phone: formData.phone,
-            address: formData.address
-          });
-        }
-      } else {
-        setError(response.message || '保存失败');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || '保存失败');
-    }
+    if (!user) return;
+
+    profilePresenter.updateProfile(user.id, formData);
   };
 
   if (!isAuthenticated || !user) {
-    return <div style={{ textAlign: 'center', padding: '2rem' }}>请先登录</div>;
+    return <div style={containers.errorContainer}>请先登录</div>;
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>个人中心</h1>
-      {message && <div style={{ color: 'green', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#d4edda', borderRadius: '4px' }}>{message}</div>}
-      {error && <div style={{ color: 'red', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#f8d7da', borderRadius: '4px' }}>{error}</div>}
-      
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="username">用户名</label>
+    <div style={containers.pageContainer}>
+      <h1 style={typography.h1}>个人中心</h1>
+      {message && <div style={alerts.success}>{message}</div>}
+      {error && <div style={alerts.error}>{error}</div>}
+
+      <form onSubmit={handleSubmit} style={containers.form}>
+        <div style={containers.formGroup}>
+          <label htmlFor="username" style={typography.label}>用户名</label>
           <input
             type="text"
             id="username"
             value={user.username}
             disabled
-            style={{ padding: '0.5rem', backgroundColor: '#e9ecef' }}
+            style={inputs.disabled}
           />
         </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="role">角色</label>
+
+        <div style={containers.formGroup}>
+          <label htmlFor="role" style={typography.label}>角色</label>
           <input
             type="text"
             id="role"
             value={user.role === 'ADMIN' ? '管理员' : '普通用户'}
             disabled
-            style={{ padding: '0.5rem', backgroundColor: '#e9ecef' }}
+            style={inputs.disabled}
           />
         </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="email">邮箱</label>
+
+        <div style={containers.formGroup}>
+          <label htmlFor="email" style={typography.label}>邮箱</label>
           <input
             type="email"
             id="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            style={{ padding: '0.5rem' }}
+            style={inputs.default}
           />
         </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="phone">手机号</label>
+
+        <div style={containers.formGroup}>
+          <label htmlFor="phone" style={typography.label}>手机号</label>
           <input
             type="text"
             id="phone"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            style={{ padding: '0.5rem' }}
+            style={inputs.default}
           />
         </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label htmlFor="address">收货地址</label>
+
+        <div style={containers.formGroup}>
+          <label htmlFor="address" style={typography.label}>收货地址</label>
           <textarea
             id="address"
             name="address"
             value={formData.address}
             onChange={handleChange}
             rows={3}
-            style={{ padding: '0.5rem' }}
+            style={inputs.textarea}
           />
         </div>
-        
+
         <button
           type="submit"
-          style={{
-            padding: '0.8rem',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '1rem'
+          disabled={loading}
+          style={loading ? buttons.disabled : buttons.primary}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              Object.assign(e.currentTarget.style, buttons.primaryHover);
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = '';
+            }
           }}
         >
-          保存修改
+          {loading ? '保存中...' : '保存修改'}
         </button>
       </form>
     </div>

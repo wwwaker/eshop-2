@@ -222,11 +222,7 @@ public class AdminController {
         if (user != null) {
             return ResponseEntity.ok(Map.of("success", true, "data", user));
         } else {
-            return ResponseEntity.ok(Map.of("success", true, "data", Map.of(
-                "id", 0L,
-                "username", "未登录",
-                "role", ""
-            )));
+            return ResponseEntity.ok(Map.of("success", false, "data", null, "error", "未登录"));
         }
     }
 

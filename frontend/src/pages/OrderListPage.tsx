@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { orderApi } from '../services/api';
 import { Order } from '../types';
+import { OrderListView } from '../contracts';
+import { orderListPresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
+import { orderApi } from '../services/api';
+import { containers, typography, buttons, tables, spacing, layout, colors, status as statusStyles } from '../styles';
 
-/**
- * 订单列表页面组件
- * 展示用户的所有订单列表，提供查看订单详情、付款和取消订单功能
- */
 const OrderListPage: React.FC = () => {
   const { user, isAuthenticated } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -15,31 +14,36 @@ const OrderListPage: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const view: OrderListView = useMemo(() => ({
+    showLoading: () => setLoading(true),
+    hideLoading: () => setLoading(false),
+    showError: (message: string) => setError(message),
+    showOrders: (orders: Order[]) => setOrders(orders),
+    showEmptyState: () => setOrders([])
+  }), []);
+
   useEffect(() => {
-    if (isAuthenticated) {
-      loadOrders();
+    orderListPresenter.attachView(view);
+
+    return () => {
+      orderListPresenter.detachView();
+    };
+  }, [view]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      orderListPresenter.loadOrders(user.id);
     } else {
       navigate('/login');
     }
   }, [isAuthenticated, user]);
 
-  const loadOrders = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const data = await orderApi.getUserOrders(user.id);
-      setOrders(data);
-    } catch (err) {
-      setError('加载订单失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handlePay = async (orderId: number) => {
     try {
       await orderApi.updateStatus(orderId, 'PAID');
-      loadOrders();
+      if (user) {
+        orderListPresenter.loadOrders(user.id);
+      }
     } catch (err) {
       setError('付款失败');
     }
@@ -48,7 +52,9 @@ const OrderListPage: React.FC = () => {
   const handleCancel = async (orderId: number) => {
     try {
       await orderApi.updateStatus(orderId, 'CANCELLED');
-      loadOrders();
+      if (user) {
+        orderListPresenter.loadOrders(user.id);
+      }
     } catch (err) {
       setError('取消订单失败');
     }
@@ -65,80 +71,70 @@ const OrderListPage: React.FC = () => {
     }
   };
 
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'PENDING': return { ...statusStyles.order, ...statusStyles.orderPending };
+      case 'PAID': return { ...statusStyles.order, ...statusStyles.orderPaid };
+      case 'SHIPPED': return { ...statusStyles.order, ...statusStyles.orderShipped };
+      case 'COMPLETED': return { ...statusStyles.order, ...statusStyles.orderCompleted };
+      case 'CANCELLED': return { ...statusStyles.order, ...statusStyles.orderCancelled };
+      default: return statusStyles.order;
+    }
+  };
+
   if (!isAuthenticated) {
-    return <div style={{ textAlign: 'center', padding: '2rem' }}>请先登录</div>;
+    return <div style={containers.errorContainer}>请先登录</div>;
   }
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '2rem' }}>加载中...</div>;
+    return <div style={containers.loadingContainer}>加载中...</div>;
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <h1>我的订单</h1>
-      {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
-      
+    <div style={containers.pageContainer}>
+      <h1 style={typography.h1}>我的订单</h1>
+      {error && <div style={{ color: colors.danger, marginBottom: spacing.md }}>{error}</div>}
+
       {orders.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
+        <div style={containers.emptyContainer}>
           <p>暂无订单</p>
           <button
             onClick={() => navigate('/')}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            style={buttons.primary}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttons.primaryHover)}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
           >
             去购物
           </button>
         </div>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ddd' }}>
-              <th style={{ padding: '1rem', textAlign: 'left' }}>订单号</th>
-              <th style={{ padding: '1rem', textAlign: 'center' }}>总金额</th>
-              <th style={{ padding: '1rem', textAlign: 'center' }}>状态</th>
-              <th style={{ padding: '1rem', textAlign: 'center' }}>创建时间</th>
-              <th style={{ padding: '1rem', textAlign: 'center' }}>操作</th>
+        <table style={tables.default}>
+          <thead style={tables.header}>
+            <tr>
+              <th style={tables.headerCell}>订单号</th>
+              <th style={{ ...tables.headerCell, textAlign: 'center' as const }}>总金额</th>
+              <th style={{ ...tables.headerCell, textAlign: 'center' as const }}>状态</th>
+              <th style={{ ...tables.headerCell, textAlign: 'center' as const }}>创建时间</th>
+              <th style={{ ...tables.headerCell, textAlign: 'center' as const }}>操作</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order.id} style={{ borderBottom: '1px solid #ddd' }}>
-                <td style={{ padding: '1rem' }}>{order.orderNo}</td>
-                <td style={{ padding: '1rem', textAlign: 'center' }}>¥{order.totalAmount.toFixed(2)}</td>
-                <td style={{ padding: '1rem', textAlign: 'center' }}>
-                  <span style={{
-                    padding: '0.2rem 0.6rem',
-                    borderRadius: '4px',
-                    backgroundColor: order.status === 'COMPLETED' ? '#d4edda' : 
-                                   order.status === 'CANCELLED' ? '#f8d7da' : 
-                                   order.status === 'PENDING' ? '#fff3cd' : '#d1ecf1',
-                    color: order.status === 'COMPLETED' ? '#155724' : 
-                           order.status === 'CANCELLED' ? '#721c24' : 
-                           order.status === 'PENDING' ? '#856404' : '#0c5460'
-                  }}>
+              <tr key={order.id} style={tables.row}>
+                <td style={tables.cell}>{order.orderNo}</td>
+                <td style={{ ...tables.cell, textAlign: 'center' as const }}>¥{order.totalAmount.toFixed(2)}</td>
+                <td style={{ ...tables.cell, textAlign: 'center' as const }}>
+                  <span style={getStatusStyle(order.status)}>
                     {getStatusText(order.status)}
                   </span>
                 </td>
-                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                <td style={{ ...tables.cell, textAlign: 'center' as const }}>
                   {new Date(order.createdAt).toLocaleString()}
                 </td>
-                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                <td style={{ ...tables.cell, textAlign: 'center' as const, display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                   <Link
                     to={`/order/${order.id}`}
-                    style={{
-                      padding: '0.3rem 0.6rem',
-                      backgroundColor: '#007bff',
-                      color: 'white',
-                      textDecoration: 'none',
-                      borderRadius: '4px',
-                      marginRight: '0.5rem'
-                    }}
+                    style={buttons.smallPrimary}
                   >
                     查看详情
                   </Link>
@@ -146,28 +142,17 @@ const OrderListPage: React.FC = () => {
                     <>
                       <button
                         onClick={() => handlePay(order.id)}
-                        style={{
-                          padding: '0.3rem 0.6rem',
-                          backgroundColor: '#28a745',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          marginRight: '0.5rem',
-                          cursor: 'pointer'
-                        }}
+                        style={buttons.smallPrimary}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.success}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
                       >
                         付款
                       </button>
                       <button
                         onClick={() => handleCancel(order.id)}
-                        style={{
-                          padding: '0.3rem 0.6rem',
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
+                        style={buttons.smallDanger}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.dangerHover || colors.danger}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.danger}
                       >
                         取消
                       </button>
