@@ -9,6 +9,8 @@ import { containers, typography, inputs, buttons, alerts, spacing } from '../sty
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [captcha, setCaptcha] = useState('');
+  const [captchaImage, setCaptchaImage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { setUser } = useUser();
@@ -25,11 +27,15 @@ const LoginPage: React.FC = () => {
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
       }
-    }
+    },
+    showCaptcha: (image: string) => setCaptchaImage(image),
+    updateCaptchaInput: (value: string) => setCaptcha(value)
   }), [navigate, setUser]);
 
   useEffect(() => {
     loginPresenter.attachView(view);
+    // 加载验证码
+    loginPresenter.loadCaptcha();
 
     return () => {
       loginPresenter.detachView();
@@ -39,7 +45,12 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    loginPresenter.login(username, password);
+    loginPresenter.login(username, password, captcha);
+  };
+
+  const handleCaptchaRefresh = () => {
+    loginPresenter.loadCaptcha();
+    setCaptcha('');
   };
 
   return (
@@ -72,6 +83,28 @@ const LoginPage: React.FC = () => {
             required
             style={inputs.default}
           />
+        </div>
+        <div style={containers.formGroup}>
+          <label htmlFor="captcha" style={typography.label}>验证码</label>
+          <div style={{ display: 'flex', gap: spacing.sm }}>
+            <input
+              type="text"
+              id="captcha"
+              value={captcha}
+              onChange={(e) => setCaptcha(e.target.value)}
+              required
+              style={{ flex: 1, ...inputs.default }}
+              placeholder="请输入验证码"
+            />
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <img
+                src={`data:image/png;base64,${captchaImage}`}
+                alt="验证码"
+                style={{ height: '40px', cursor: 'pointer' }}
+                onClick={handleCaptchaRefresh}
+              />
+            </div>
+          </div>
         </div>
         <button
           type="submit"

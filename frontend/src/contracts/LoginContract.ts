@@ -7,13 +7,17 @@ export interface LoginView {
   navigateToHome(): void;
   navigateToRegister(): void;
   setLoggedInUser(user: User | null): void;
+  showCaptcha(image: string): void;
+  updateCaptchaInput(value: string): void;
 }
 
 export interface LoginPresenter {
   attachView(view: LoginView): void;
   detachView(): void;
-  login(username: string, password: string): void;
-  validateLogin(username: string, password: string): string[];
+  login(username: string, password: string, captcha: string): void;
+  validateLogin(username: string, password: string, captcha: string): string[];
+  loadCaptcha(): void;
+  onCaptchaChange(captcha: string): void;
 }
 
 export interface LoginState {
@@ -22,4 +26,6 @@ export interface LoginState {
   error: string;
   username: string;
   password: string;
+  captcha: string;
+  captchaImage: string;
 }

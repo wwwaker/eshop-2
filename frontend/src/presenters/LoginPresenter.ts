@@ -8,18 +8,20 @@ export class LoginPresenterImpl extends BasePresenterImpl<LoginView> implements 
     loading: false,
     error: '',
     username: '',
-    password: ''
+    password: '',
+    captcha: '',
+    captchaImage: ''
   };
 
   attachView(view: LoginView): void {
     super.attachView(view);
   }
 
-  login(username: string, password: string): void {
+  login(username: string, password: string, captcha: string): void {
     this.state.loading = true;
     this.getView()?.showLoading();
 
-    const validationErrors = this.validateLogin(username, password);
+    const validationErrors = this.validateLogin(username, password, captcha);
     if (validationErrors.length > 0) {
       this.state.error = validationErrors.join('\n');
       this.getView()?.showError(this.state.error);
@@ -28,7 +30,7 @@ export class LoginPresenterImpl extends BasePresenterImpl<LoginView> implements 
       return;
     }
 
-    userApi.login(username, password)
+    userApi.login(username, password, captcha)
       .then((response: any) => {
         if (response) {
           this.state.user = response;
@@ -51,7 +53,7 @@ export class LoginPresenterImpl extends BasePresenterImpl<LoginView> implements 
       });
   }
 
-  validateLogin(username: string, password: string): string[] {
+  validateLogin(username: string, password: string, captcha: string): string[] {
     const errors: string[] = [];
 
     if (!username || username.trim() === '') {
@@ -62,7 +64,29 @@ export class LoginPresenterImpl extends BasePresenterImpl<LoginView> implements 
       errors.push('密码不能为空');
     }
 
+    if (!captcha || captcha.trim() === '') {
+      errors.push('验证码不能为空');
+    }
+
     return errors;
+  }
+
+  loadCaptcha(): void {
+    userApi.getCaptcha()
+      .then((response: any) => {
+        if (response.captcha) {
+          this.state.captchaImage = response.captcha;
+          this.getView()?.showCaptcha(response.captcha);
+        }
+      })
+      .catch((err: any) => {
+        console.error('加载验证码失败:', err);
+      });
+  }
+
+  onCaptchaChange(captcha: string): void {
+    this.state.captcha = captcha;
+    this.getView()?.updateCaptchaInput(captcha);
   }
 }
 

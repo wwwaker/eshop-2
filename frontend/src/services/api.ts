@@ -14,6 +14,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 /**
@@ -21,8 +22,12 @@ const api = axios.create({
  * 提供用户登录、注册、个人信息更新等功能
  */
 export const userApi = {
-  login: async (username: string, password: string) => {
-    const response = await api.post('/users/login', { username, password });
+  login: async (username: string, password: string, captcha: string) => {
+    const response = await api.post('/users/login', { username, password, captcha });
+    return response.data;
+  },
+  getCaptcha: async () => {
+    const response = await api.get('/users/captcha');
     return response.data;
   },
   register: async (user: Omit<User, 'id' | 'role' | 'createdAt' | 'updatedAt'>) => {
