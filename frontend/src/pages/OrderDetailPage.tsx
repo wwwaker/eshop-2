@@ -6,6 +6,9 @@ import { orderDetailPresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
 import { orderApi } from '../services/api';
 import { containers, typography, buttons, tables, images, spacing, layout, colors, status as statusStyles } from '../styles';
+import { pageStyles } from '../pageStyles';
+import PageLoader from '../components/PageLoader';
+import useDelayedLoading from '../hooks/useDelayedLoading';
 
 const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,7 +16,7 @@ const OrderDetailPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
   const navigate = useNavigate();
 
   const view: OrderDetailView = useMemo(() => ({
@@ -29,7 +32,7 @@ const OrderDetailPage: React.FC = () => {
     return () => {
       orderDetailPresenter.detachView();
     };
-  }, [view, orderDetailPresenter]);
+  }, [view]);
 
   useEffect(() => {
     if (isAuthenticated && id) {
@@ -37,7 +40,7 @@ const OrderDetailPage: React.FC = () => {
     } else {
       navigate('/login');
     }
-  }, [isAuthenticated, id]);
+  }, [isAuthenticated, id, navigate]);
 
   const getStatusText = (status: string) => {
     switch (status) {
@@ -61,8 +64,8 @@ const OrderDetailPage: React.FC = () => {
     }
   };
 
-  const handleImageError = (productId: number) => {
-    setImageErrors(prev => ({ ...prev, [productId]: true }));
+  const handleImageError = (orderItemId: number) => {
+    setImageErrors(prev => ({ ...prev, [orderItemId]: true }));
   };
 
   const handlePay = async () => {
@@ -85,12 +88,18 @@ const OrderDetailPage: React.FC = () => {
     }
   };
 
+  const shouldShowLoader = useDelayedLoading(loading);
+
   if (!isAuthenticated) {
     return <div style={containers.errorContainer}>请先登录</div>;
   }
 
+  if (loading && !shouldShowLoader) {
+    return null;
+  }
+
   if (loading) {
-    return <div style={containers.loadingContainer}>加载中...</div>;
+    return <PageLoader />;
   }
 
   if (error || !order) {
@@ -99,7 +108,10 @@ const OrderDetailPage: React.FC = () => {
 
   return (
     <div style={containers.pageContainer}>
-      <h1 style={typography.h1}>订单详情</h1>
+      <div style={pageStyles.heroSection}>
+        <h1 style={{ ...typography.h1, ...pageStyles.heroTitle }}>订单详情</h1>
+        <p style={pageStyles.heroDescription}>跟踪订单进度并核对收货信息与商品明细。</p>
+      </div>
 
       <div style={{ ...containers.card, marginBottom: spacing.xl }}>
         <h2 style={typography.h2}>订单信息</h2>
@@ -143,6 +155,7 @@ const OrderDetailPage: React.FC = () => {
       </div>
 
       <h2 style={typography.h2}>商品列表</h2>
+      <div style={{ ...containers.card, ...pageStyles.tableCard }}>
       <table style={tables.default}>
         <thead style={tables.header}>
           <tr>
@@ -157,11 +170,11 @@ const OrderDetailPage: React.FC = () => {
             <tr key={item.id} style={tables.row}>
               <td style={tables.cell}>
                 <div style={layout.flex.row}>
-                  {item.product?.imageUrl && !imageErrors[item.product.id] ? (
+                  {(item.product?.imageUrl || item.productImageUrl) && !imageErrors[item.id] ? (
                     <img
-                      src={item.product.imageUrl}
+                      src={item.product?.imageUrl || item.productImageUrl || ''}
                       alt={item.productName}
-                      onError={() => handleImageError(item.product.id)}
+                      onError={() => handleImageError(item.id)}
                       style={images.thumbnail}
                     />
                   ) : (
@@ -194,6 +207,7 @@ const OrderDetailPage: React.FC = () => {
           </tr>
         </tfoot>
       </table>
+      </div>
     </div>
   );
 };

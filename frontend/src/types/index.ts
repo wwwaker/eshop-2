@@ -73,6 +73,7 @@ export interface OrderItem {
   orderId: number;
   productId: number;
   productName: string;
+  productImageUrl?: string;
   productPrice: number;
   quantity: number;
   subtotal: number;

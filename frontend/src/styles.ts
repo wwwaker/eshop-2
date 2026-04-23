@@ -2,26 +2,28 @@
 
 // 颜色主题
 export const colors = {
-  primary: '#007bff',
-  primaryHover: '#0069d9',
-  secondary: '#6c757d',
-  secondaryHover: '#5a6268',
-  success: '#28a745',
-  successHover: '#218838',
-  danger: '#dc3545',
-  dangerHover: '#c82333',
-  warning: '#ffc107',
-  light: '#f8f9fa',
-  dark: '#343a40',
-  border: '#ddd',
-  borderLight: '#eee',
-  text: '#333',
-  textSecondary: '#666',
-  textLight: '#999',
-  background: '#fff',
-  backgroundLight: '#f8f9fa',
-  backgroundError: '#f8d7da',
-  borderError: '#f5c6cb',
+  primary: '#4f46e5',
+  primaryHover: '#4338ca',
+  secondary: '#334155',
+  secondaryHover: '#1e293b',
+  success: '#059669',
+  successHover: '#047857',
+  danger: '#dc2626',
+  dangerHover: '#b91c1c',
+  warning: '#f59e0b',
+  light: '#f1f5f9',
+  dark: '#0f172a',
+  border: '#dbe2ef',
+  borderLight: '#eef2ff',
+  text: '#0f172a',
+  textSecondary: '#475569',
+  textLight: '#94a3b8',
+  background: '#ffffff',
+  backgroundLight: '#f8fafc',
+  backgroundError: '#fee2e2',
+  borderError: '#fecaca',
+  accent: '#06b6d4',
+  accentSoft: '#ecfeff',
 };
 
 // 间距
@@ -38,15 +40,15 @@ export const spacing = {
 export const borders = {
   thin: '1px solid',
   radius: {
-    sm: '4px',
-    md: '8px',
+    sm: '10px',
+    md: '16px',
   },
 };
 
 // 阴影
 export const shadows = {
-  sm: '0 2px 4px rgba(0,0,0,0.1)',
-  md: '0 5px 15px rgba(0,0,0,0.15)',
+  sm: '0 8px 24px rgba(15, 23, 42, 0.08)',
+  md: '0 16px 40px rgba(79, 70, 229, 0.18)',
 };
 
 // 容器样式
@@ -56,6 +58,7 @@ export const containers = {
     padding: spacing.lg,
     borderRadius: borders.radius.md,
     boxShadow: shadows.sm,
+    border: `${borders.thin} ${colors.borderLight}`,
   },
   form: {
     display: 'flex' as const,
@@ -69,24 +72,34 @@ export const containers = {
   },
   loginContainer: {
     maxWidth: '400px',
-    margin: '0 auto',
+    margin: '2rem auto',
     padding: spacing.xl,
+    borderRadius: borders.radius.md,
+    border: `${borders.thin} ${colors.borderLight}`,
+    boxShadow: shadows.md,
+    background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
   },
   registerContainer: {
     maxWidth: '500px',
-    margin: '0 auto',
+    margin: '2rem auto',
     padding: spacing.xl,
+    borderRadius: borders.radius.md,
+    border: `${borders.thin} ${colors.borderLight}`,
+    boxShadow: shadows.md,
+    background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
   },
   productCard: {
-    border: `${borders.thin} ${colors.border}`,
+    border: `${borders.thin} ${colors.borderLight}`,
     padding: spacing.md,
     borderRadius: borders.radius.md,
     transition: 'all 0.3s ease',
     boxShadow: shadows.sm,
     position: 'relative' as const,
+    overflow: 'hidden' as const,
+    background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
   },
   productCardHover: {
-    transform: 'translateY(-5px)',
+    transform: 'translateY(-6px)',
     boxShadow: shadows.md,
   },
   productGrid: {
@@ -95,8 +108,8 @@ export const containers = {
     gap: spacing.lg,
   },
   pageContainer: {
-    padding: '1rem',
-    maxWidth: '1200px',
+    padding: '1.25rem',
+    maxWidth: '1280px',
     margin: '0 auto',
   },
   flexGap: {
@@ -135,13 +148,14 @@ export const containers = {
 // 文本样式
 export const typography = {
   h1: {
-    fontSize: '2rem',
+    fontSize: '2.2rem',
     fontWeight: 'bold' as const,
     marginBottom: spacing.lg,
     color: colors.text,
+    letterSpacing: '-0.02em',
   },
   h2: {
-    fontSize: '1.5rem',
+    fontSize: '1.65rem',
     fontWeight: 'bold' as const,
     marginBottom: spacing.md,
     color: colors.text,
@@ -184,6 +198,7 @@ export const inputs = {
     border: `${borders.thin} ${colors.border}`,
     boxSizing: 'border-box' as const,
     fontSize: '1rem',
+    transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
   },
   search: {
     flex: '1',
@@ -225,17 +240,20 @@ export const inputs = {
 export const buttons = {
   primary: {
     padding: spacing.md,
-    backgroundColor: colors.primary,
+    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%)`,
     color: colors.background,
     border: 'none',
     borderRadius: borders.radius.sm,
     cursor: 'pointer' as const,
     fontSize: '1rem',
     fontWeight: '500' as const,
-    transition: 'background-color 0.3s',
+    boxShadow: '0 8px 20px rgba(79, 70, 229, 0.28)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease',
   },
   primaryHover: {
-    backgroundColor: '#0069d9',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 12px 26px rgba(79, 70, 229, 0.34)',
+    opacity: 0.96,
   },
   secondary: {
     padding: spacing.md,
@@ -246,10 +264,11 @@ export const buttons = {
     cursor: 'pointer' as const,
     fontSize: '1rem',
     fontWeight: '500' as const,
-    transition: 'background-color 0.3s',
+    transition: 'transform 0.2s ease, background-color 0.2s ease',
   },
   secondaryHover: {
-    backgroundColor: '#5a6268',
+    backgroundColor: colors.secondaryHover,
+    transform: 'translateY(-1px)',
   },
   danger: {
     padding: spacing.md,
@@ -274,10 +293,11 @@ export const buttons = {
     cursor: 'pointer' as const,
     fontSize: '1rem',
     fontWeight: '500' as const,
-    transition: 'background-color 0.3s',
+    transition: 'transform 0.2s ease, background-color 0.2s ease',
   },
   successHover: {
-    backgroundColor: '#218838',
+    backgroundColor: colors.successHover,
+    transform: 'translateY(-1px)',
   },
   small: {
     padding: '0.3rem 0.6rem',
@@ -352,10 +372,13 @@ export const alerts = {
 // 导航样式
 export const navigation = {
   navLink: (isActive: boolean) => ({
-    padding: spacing.sm,
-    color: isActive ? colors.primary : colors.text,
+    padding: `${spacing.sm} ${spacing.md}`,
+    color: isActive ? colors.primary : colors.textSecondary,
     textDecoration: 'none' as const,
-    fontWeight: isActive ? 'bold' as const : 'normal' as const,
+    fontWeight: isActive ? 'bold' as const : '500' as const,
+    borderRadius: borders.radius.sm,
+    backgroundColor: isActive ? colors.accentSoft : 'transparent',
+    transition: 'all 0.2s ease',
   }),
   navButton: (isActive: boolean) => ({
     width: '100%',

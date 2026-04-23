@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
     return () => {
       loginPresenter.detachView();
     };
-  }, [view, loginPresenter]);
+  }, [view]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +55,10 @@ const LoginPage: React.FC = () => {
 
   return (
     <div style={containers.loginContainer}>
-      <h2 style={{ ...typography.h2, ...typography.textCenter }}>登录</h2>
+      <h2 style={{ ...typography.h2, ...typography.textCenter, marginBottom: spacing.xs }}>登录</h2>
+      <p style={{ ...typography.textCenter, color: '#64748b', marginTop: 0, marginBottom: spacing.lg }}>
+        欢迎回来，继续你的购物旅程
+      </p>
       {error && (
         <div style={alerts.error}>
           {error}
@@ -126,7 +129,7 @@ const LoginPage: React.FC = () => {
       </form>
       <div style={{ marginTop: spacing.md, ...typography.textCenter }}>
         <span style={{ color: '#666' }}>没有账号？</span>
-        <Link to="/register" style={{ color: '#007bff', textDecoration: 'none', fontWeight: '500' }}>立即注册</Link>
+        <Link to="/register" style={{ color: '#4f46e5', textDecoration: 'none', fontWeight: '600' }}>立即注册</Link>
       </div>
     </div>
   );

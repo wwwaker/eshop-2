@@ -4,10 +4,10 @@ import { User } from '../types';
 import { ProfileView } from '../contracts';
 import { profilePresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
-import { containers, typography, inputs, buttons, alerts, spacing } from '../styles';
+import { containers, typography, inputs, buttons, alerts, spacing, colors, borders } from '../styles';
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated, updateUser } = useUser();
+  const { user, isAuthenticated } = useUser();
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
@@ -41,7 +41,7 @@ const ProfilePage: React.FC = () => {
     return () => {
       profilePresenter.detachView();
     };
-  }, [view, profilePresenter]);
+  }, [view]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -80,11 +80,22 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div style={containers.pageContainer}>
-      <h1 style={typography.h1}>个人中心</h1>
+      <div
+        style={{
+          marginBottom: spacing.lg,
+          padding: spacing.lg,
+          borderRadius: borders.radius.md,
+          border: `1px solid ${colors.borderLight}`,
+          background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(6,182,212,0.12) 100%)'
+        }}
+      >
+        <h1 style={{ ...typography.h1, marginBottom: spacing.xs }}>个人中心</h1>
+        <p style={{ margin: 0, color: colors.textSecondary }}>完善你的联系信息，提升下单与配送体验。</p>
+      </div>
       {message && <div style={alerts.success}>{message}</div>}
       {error && <div style={alerts.error}>{error}</div>}
 
-      <form onSubmit={handleSubmit} style={containers.form}>
+      <form onSubmit={handleSubmit} style={{ ...containers.form, ...containers.card, maxWidth: '780px', backgroundColor: '#ffffffcc' }}>
         <div style={containers.formGroup}>
           <label htmlFor="username" style={typography.label}>用户名</label>
           <input

@@ -4,7 +4,10 @@ import { CartItem } from '../types';
 import { CartView } from '../contracts';
 import { cartPresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
-import { containers, typography, inputs, buttons, images, tables, spacing, layout, colors } from '../styles';
+import { containers, typography, inputs, buttons, images, tables, spacing, layout, colors, shadows } from '../styles';
+import { pageStyles } from '../pageStyles';
+import PageLoader from '../components/PageLoader';
+import useDelayedLoading from '../hooks/useDelayedLoading';
 
 const CartPage: React.FC = () => {
   const { user, isAuthenticated } = useUser();
@@ -13,7 +16,6 @@ const CartPage: React.FC = () => {
   const [error, setError] = useState('');
   const [total, setTotal] = useState(0);
   const [message, setMessage] = useState('');
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ const CartPage: React.FC = () => {
     return () => {
       cartPresenter.detachView();
     };
-  }, [view, cartPresenter]);
+  }, [view]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -43,7 +45,7 @@ const CartPage: React.FC = () => {
     } else {
       navigate('/login');
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleUpdateQuantity = async (cartItemId: number, newQuantity: number) => {
     if (!user) return;
@@ -73,20 +75,34 @@ const CartPage: React.FC = () => {
     setImageErrors(prev => ({ ...prev, [productId]: true }));
   };
 
+  const shouldShowLoader = useDelayedLoading(loading);
+
   if (!isAuthenticated) {
     return <div style={containers.errorContainer}>请先登录</div>;
   }
 
+  if (loading && !shouldShowLoader) {
+    return null;
+  }
+
   if (loading) {
-    return <div style={containers.loadingContainer}>加载中...</div>;
+    return <PageLoader />;
   }
 
   return (
     <div style={containers.pageContainer}>
-      <h1 style={typography.h1}>购物车</h1>
+      <div style={pageStyles.heroSection}>
+        <h1 style={{ ...typography.h1, ...pageStyles.heroTitle }}>购物车</h1>
+        <p style={pageStyles.heroDescription}>已选商品 {cartItems.length} 件，确认后可一键结算。</p>
+      </div>
       {message && (
         <div style={{ marginBottom: spacing.md, color: message.includes('失败') ? colors.danger : colors.success }}>
           {message}
+        </div>
+      )}
+      {error && (
+        <div style={{ marginBottom: spacing.md, color: colors.danger }}>
+          {error}
         </div>
       )}
 
@@ -104,6 +120,13 @@ const CartPage: React.FC = () => {
         </div>
       ) : (
         <>
+          <div
+            style={{
+              ...containers.card,
+              marginBottom: spacing.lg,
+              ...pageStyles.tableCard
+            }}
+          >
           <table style={tables.default}>
             <thead style={tables.header}>
               <tr>
@@ -138,10 +161,21 @@ const CartPage: React.FC = () => {
                   </td>
                   <td style={{ ...tables.cell, textAlign: 'center' as const }}>¥{item.product.price.toFixed(2)}</td>
                   <td style={{ ...tables.cell, textAlign: 'center' as const }}>
-                    <div style={{ ...layout.flex.row, justifyContent: 'center' as const, ...layout.gap.sm }}>
+                    <div style={pageStyles.quantityStepper}>
                       <button
                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                        style={buttons.quantity}
+                        style={{
+                          ...buttons.quantity,
+                          ...pageStyles.quantityButton
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.background = colors.accentSoft;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.background = colors.background;
+                        }}
                       >
                         -
                       </button>
@@ -151,11 +185,25 @@ const CartPage: React.FC = () => {
                         onChange={(e) => handleUpdateQuantity(item.id, parseInt(e.target.value) || 1)}
                         min="1"
                         max={item.product.stock}
-                        style={inputs.number}
+                        style={{
+                          ...inputs.number,
+                          ...pageStyles.quantityInput
+                        }}
                       />
                       <button
                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                        style={buttons.quantity}
+                        style={{
+                          ...buttons.quantity,
+                          ...pageStyles.quantityButton
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.background = colors.accentSoft;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.background = colors.background;
+                        }}
                       >
                         +
                       </button>
@@ -178,8 +226,17 @@ const CartPage: React.FC = () => {
               ))}
             </tbody>
           </table>
+          </div>
 
-          <div style={layout.flexBetween}>
+          <div
+            style={{
+              ...layout.flexBetween,
+              ...containers.card,
+              backgroundColor: '#ffffffd9',
+              border: `1px solid ${colors.borderLight}`,
+              boxShadow: shadows.sm
+            }}
+          >
             <button
               onClick={handleClearCart}
               style={buttons.secondary}
@@ -189,25 +246,23 @@ const CartPage: React.FC = () => {
               清空购物车
             </button>
             <div style={{ textAlign: 'right' as const }}>
-              <p style={{ fontSize: '1.2rem', margin: '0 0 1rem 0' }}>
+              <p style={{ fontSize: '1.2rem', margin: '0 0 0.8rem 0' }}>
                 总计：<span style={{ fontWeight: 'bold', color: colors.danger }}>¥{total.toFixed(2)}</span>
+              </p>
+              <p style={{ margin: '0 0 1rem 0', color: colors.textSecondary, fontSize: '0.9rem' }}>
+                含运费与优惠请以结算页为准
               </p>
               <button
                 onClick={handleCheckout}
-                disabled={checkoutLoading}
-                style={checkoutLoading ? buttons.disabled : buttons.success}
+                style={buttons.success}
                 onMouseEnter={(e) => {
-                  if (!checkoutLoading) {
-                    Object.assign(e.currentTarget.style, buttons.successHover);
-                  }
+                  Object.assign(e.currentTarget.style, buttons.successHover);
                 }}
                 onMouseLeave={(e) => {
-                  if (!checkoutLoading) {
-                    e.currentTarget.style.backgroundColor = '';
-                  }
+                  e.currentTarget.style.backgroundColor = '';
                 }}
               >
-                {checkoutLoading ? '结账中...' : '去结账'}
+                去结账
               </button>
             </div>
           </div>

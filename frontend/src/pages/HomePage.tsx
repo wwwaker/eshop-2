@@ -3,7 +3,10 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Product, Category } from '../types';
 import { HomeView } from '../contracts';
 import { homePresenter } from '../presenters';
-import { containers, typography, navigation, images, status, spacing, layout, colors, borders, shadows } from '../styles';
+import { containers, typography, navigation, images, status, spacing, layout, colors, shadows } from '../styles';
+import { pageStyles } from '../pageStyles';
+import PageLoader from '../components/PageLoader';
+import useDelayedLoading from '../hooks/useDelayedLoading';
 
 const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -45,7 +48,7 @@ const HomePage: React.FC = () => {
     return () => {
       homePresenter.detachView();
     };
-  }, [view, homePresenter]);
+  }, [view]);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -67,18 +70,18 @@ const HomePage: React.FC = () => {
     }
   }, [searchParams]);
 
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    homePresenter.searchProducts(searchKeyword);
-  };
-
   const handleImageError = (productId: number) => {
     setImageErrors(prev => ({ ...prev, [productId]: true }));
   };
 
+  const shouldShowLoader = useDelayedLoading(loading);
+
+  if (loading && !shouldShowLoader) {
+    return null;
+  }
+
   if (loading) {
-    return <div style={containers.loadingContainer}>加载中...</div>;
+    return <PageLoader />;
   }
 
   if (error) {
@@ -87,12 +90,29 @@ const HomePage: React.FC = () => {
 
   return (
     <div style={containers.pageContainer}>
-      <div style={layout.marginBottom.lg}>
-        <h1 style={typography.h1}>欢迎来到EShop</h1>
+      <div style={{ ...pageStyles.heroSection, padding: spacing.xl }}>
+        <h1 style={{ ...typography.h1, ...pageStyles.heroTitle, marginBottom: spacing.sm }}>欢迎来到EShop</h1>
+        <p style={pageStyles.heroDescription}>精选好物每日更新，支持分类筛选、关键词搜索与快速下单。</p>
+        <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md, flexWrap: 'wrap' as const }}>
+          <span style={{ padding: '0.35rem 0.7rem', borderRadius: '999px', backgroundColor: colors.accentSoft, color: colors.primary }}>商品 {totalElements} 件</span>
+          <span style={{ padding: '0.35rem 0.7rem', borderRadius: '999px', backgroundColor: '#eef2ff', color: colors.primary }}>分类 {categories.length} 个</span>
+          <span style={{ padding: '0.35rem 0.7rem', borderRadius: '999px', backgroundColor: '#ecfdf5', color: colors.success }}>当前第 {page} 页</span>
+        </div>
       </div>
 
-      <div style={{ display: 'flex' as const, gap: spacing.lg }}>
-        <div style={layout.categorySidebar}>
+      <div style={{ display: 'flex' as const, gap: spacing.lg, alignItems: 'flex-start' as const }}>
+        <div
+          style={{
+            ...layout.categorySidebar,
+            position: 'sticky',
+            top: '96px',
+            ...pageStyles.glassCard,
+            borderRadius: '14px',
+            padding: spacing.md,
+            border: `1px solid ${colors.borderLight}`,
+            boxShadow: shadows.sm
+          }}
+        >
           <h3 style={typography.h3}>商品分类</h3>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             <li>
@@ -102,7 +122,10 @@ const HomePage: React.FC = () => {
                   setSearchKeyword('');
                   navigate('/');
                 }}
-                style={navigation.navButton(selectedCategory === null && !searchKeyword)}
+                  style={{
+                    ...navigation.navButton(selectedCategory === null && !searchKeyword),
+                    borderRadius: '10px'
+                  }}
                 onMouseEnter={(e) => {
                   if (!(selectedCategory === null && !searchKeyword)) {
                     e.currentTarget.style.backgroundColor = colors.light;
@@ -123,7 +146,10 @@ const HomePage: React.FC = () => {
                   onClick={() => {
                     navigate(`/?category=${category.id}`);
                   }}
-                  style={navigation.navButton(selectedCategory === category.id)}
+                  style={{
+                    ...navigation.navButton(selectedCategory === category.id),
+                    borderRadius: '10px'
+                  }}
                   onMouseEnter={(e) => {
                     if (selectedCategory !== category.id) {
                       e.currentTarget.style.backgroundColor = colors.light;
@@ -142,7 +168,16 @@ const HomePage: React.FC = () => {
           </ul>
         </div>
 
-        <div style={layout.mainContent}>
+        <div
+          style={{
+            ...layout.mainContent,
+            ...pageStyles.glassCard,
+            borderRadius: '16px',
+            border: `1px solid ${colors.borderLight}`,
+            padding: spacing.lg,
+            boxShadow: shadows.sm
+          }}
+        >
           <h2 style={typography.h2}>{selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : '全部商品'}</h2>
           
           {/* 排序和分页控制 */}
@@ -213,6 +248,9 @@ const HomePage: React.FC = () => {
                   <p style={{ ...status.stock, color: product.stock && product.stock > 0 ? colors.success : colors.danger }}>
                     库存: {product.stock || 0}
                   </p>
+                  <div style={{ marginTop: spacing.sm, color: colors.primary, fontSize: '0.85rem', fontWeight: 600 }}>
+                    查看详情 →
+                  </div>
                 </Link>
               </div>
             ))}

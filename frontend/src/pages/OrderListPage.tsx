@@ -5,7 +5,10 @@ import { OrderListView } from '../contracts';
 import { orderListPresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
 import { orderApi } from '../services/api';
-import { containers, typography, buttons, tables, spacing, layout, colors, status as statusStyles } from '../styles';
+import { containers, typography, buttons, tables, spacing, colors, status as statusStyles } from '../styles';
+import { pageStyles } from '../pageStyles';
+import PageLoader from '../components/PageLoader';
+import useDelayedLoading from '../hooks/useDelayedLoading';
 
 const OrderListPage: React.FC = () => {
   const { user, isAuthenticated } = useUser();
@@ -28,7 +31,7 @@ const OrderListPage: React.FC = () => {
     return () => {
       orderListPresenter.detachView();
     };
-  }, [view, orderListPresenter]);
+  }, [view]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -36,7 +39,7 @@ const OrderListPage: React.FC = () => {
     } else {
       navigate('/login');
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, navigate]);
 
   const handlePay = async (orderId: number) => {
     try {
@@ -82,17 +85,26 @@ const OrderListPage: React.FC = () => {
     }
   };
 
+  const shouldShowLoader = useDelayedLoading(loading);
+
   if (!isAuthenticated) {
     return <div style={containers.errorContainer}>请先登录</div>;
   }
 
+  if (loading && !shouldShowLoader) {
+    return null;
+  }
+
   if (loading) {
-    return <div style={containers.loadingContainer}>加载中...</div>;
+    return <PageLoader />;
   }
 
   return (
     <div style={containers.pageContainer}>
-      <h1 style={typography.h1}>我的订单</h1>
+      <div style={pageStyles.heroSection}>
+        <h1 style={{ ...typography.h1, ...pageStyles.heroTitle }}>我的订单</h1>
+        <p style={pageStyles.heroDescription}>查看订单状态、完成支付与订单管理。</p>
+      </div>
       {error && <div style={{ color: colors.danger, marginBottom: spacing.md }}>{error}</div>}
 
       {orders.length === 0 ? (
@@ -108,6 +120,7 @@ const OrderListPage: React.FC = () => {
           </button>
         </div>
       ) : (
+        <div style={{ ...containers.card, ...pageStyles.tableCard }}>
         <table style={tables.default}>
           <thead style={tables.header}>
             <tr>
@@ -163,6 +176,7 @@ const OrderListPage: React.FC = () => {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

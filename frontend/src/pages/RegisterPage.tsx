@@ -31,7 +31,7 @@ const RegisterPage: React.FC = () => {
     return () => {
       registerPresenter.detachView();
     };
-  }, [view, registerPresenter]);
+  }, [view]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +42,10 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div style={containers.registerContainer}>
-      <h2 style={{ ...typography.h2, ...typography.textCenter }}>用户注册</h2>
+      <h2 style={{ ...typography.h2, ...typography.textCenter, marginBottom: spacing.xs }}>用户注册</h2>
+      <p style={{ ...typography.textCenter, color: '#64748b', marginTop: 0, marginBottom: spacing.lg }}>
+        创建账号后即可同步订单、购物车和个人信息
+      </p>
       {error && (
         <div style={alerts.error}>
           {error}
@@ -155,7 +158,7 @@ const RegisterPage: React.FC = () => {
       </form>
       <div style={{ marginTop: spacing.lg, ...typography.textCenter }}>
         <span style={{ color: '#666' }}>已有账号？</span>
-        <Link to="/login" style={{ color: '#007bff', textDecoration: 'none', fontWeight: '500' }}>立即登录</Link>
+        <Link to="/login" style={{ color: '#4f46e5', textDecoration: 'none', fontWeight: '600' }}>立即登录</Link>
       </div>
     </div>
   );

@@ -4,7 +4,9 @@ import { Product } from '../types';
 import { ProductDetailView } from '../contracts';
 import { productDetailPresenter } from '../presenters';
 import { useUser } from '../context/UserContext';
-import { containers, typography, inputs, buttons, images, status, spacing, layout, colors } from '../styles';
+import { containers, typography, inputs, buttons, images, spacing, layout, colors } from '../styles';
+import PageLoader from '../components/PageLoader';
+import useDelayedLoading from '../hooks/useDelayedLoading';
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +39,7 @@ const ProductDetailPage: React.FC = () => {
     return () => {
       productDetailPresenter.detachView();
     };
-  }, [view, productDetailPresenter]);
+  }, [view]);
 
   useEffect(() => {
     if (id) {
@@ -56,8 +58,14 @@ const ProductDetailPage: React.FC = () => {
     }
   };
 
+  const shouldShowLoader = useDelayedLoading(loading);
+
+  if (loading && !shouldShowLoader) {
+    return null;
+  }
+
   if (loading) {
-    return <div style={containers.loadingContainer}>加载中...</div>;
+    return <PageLoader />;
   }
 
   if (error || !product) {
