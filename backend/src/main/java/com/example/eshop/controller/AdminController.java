@@ -1,5 +1,8 @@
 package com.example.eshop.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.example.eshop.entity.Category;
 import com.example.eshop.entity.Order;
 import com.example.eshop.entity.Product;
@@ -151,9 +154,13 @@ public class AdminController {
     }
 
     @PutMapping("/orders/{id}/ship")
-    public ResponseEntity<Void> shipOrder(@PathVariable Long id) {
-        orderService.shipOrder(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> shipOrder(@PathVariable Long id) {
+        try {
+            orderService.shipOrder(id);
+            return ResponseEntity.ok(Map.of("success", true, "message", "发货成功"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
 
     @GetMapping("/users")
@@ -222,7 +229,10 @@ public class AdminController {
         if (user != null) {
             return ResponseEntity.ok(Map.of("success", true, "data", user));
         } else {
-            return ResponseEntity.ok(Map.of("success", false, "data", null, "error", "未登录"));
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "未登录");
+            return ResponseEntity.ok(response);
         }
     }
 

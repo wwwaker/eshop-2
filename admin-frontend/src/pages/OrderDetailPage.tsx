@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Order } from '../types';
 import { OrderDetailView, OrderDetailPresenter } from '../contracts';
 import { orderDetailPresenter } from '../presenters';
-import { typography, tables, layout, colors, status } from '../styles';
+import { typography, tables, layout, colors, status, buttons } from '../styles';
 
 /**
  * 订单详情页面
@@ -87,6 +87,23 @@ const OrderDetailPage: React.FC = () => {
               </span>
             </p>
             <p><strong>用户：</strong>{order.user?.username || ''}</p>
+            {order.status === 'PAID' && (
+              <button
+                style={{
+                  ...buttons.smallSuccess,
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.9rem',
+                  marginTop: '1rem'
+                }}
+                onClick={() => {
+                  if (window.confirm('确定要发货吗？')) {
+                    presenter.shipOrder(order.id);
+                  }
+                }}
+              >
+                发货
+              </button>
+            )}
           </div>
           <div>
             <p><strong>收货人：</strong>{order.receiverName}</p>

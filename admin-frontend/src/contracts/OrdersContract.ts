@@ -25,6 +25,7 @@ export interface OrdersPresenter {
   getCurrentState(): OrdersState;
   getStatusText(status: string): string;
   getStatusColor(status: string): string;
+  shipOrder(orderId: number): void;
 }
 
 export interface OrdersState {

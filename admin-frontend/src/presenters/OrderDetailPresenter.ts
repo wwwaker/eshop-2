@@ -65,6 +65,20 @@ export class OrderDetailPresenterImpl extends BasePresenterImpl<OrderDetailView>
     };
     return colorMap[status] || '#6c757d';
   }
+
+  shipOrder(orderId: number): void {
+    orderApi.shipOrder(orderId)
+      .then(response => {
+        if (response.success) {
+          this.loadOrder(orderId);
+        } else {
+          this.getView()?.showError(response.error || '发货失败');
+        }
+      })
+      .catch((err: any) => {
+        this.getView()?.showError('发货失败');
+      });
+  }
 }
 
 export const orderDetailPresenter = new OrderDetailPresenterImpl();

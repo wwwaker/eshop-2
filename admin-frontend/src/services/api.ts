@@ -343,7 +343,7 @@ export const orderApi = {
    * @returns 更新后的订单信息
    */
   shipOrder: async (id: number) => {
-    const response = await axiosInstance.post<ApiResponse<Order>>(`/orders/${id}/ship`);
+    const response = await axiosInstance.put<ApiResponse<Order>>(`/orders/${id}/ship`);
     return response.data;
   },
 

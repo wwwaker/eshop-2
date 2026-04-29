@@ -16,6 +16,7 @@ export interface OrderDetailPresenter {
   handleImageError(productId: number): void;
   getStatusText(status: string): string;
   getStatusColor(status: string): string;
+  shipOrder(orderId: number): void;
 }
 
 export interface OrderDetailState {

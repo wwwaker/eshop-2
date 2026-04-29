@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { CartItem } from '../types';
 import { CartView } from '../contracts';
 import { cartPresenter } from '../presenters';
@@ -155,7 +155,9 @@ const CartPage: React.FC = () => {
                         </div>
                       )}
                       <div style={{ marginLeft: spacing.md }}>
-                        <h3 style={typography.h3}>{item.product.name}</h3>
+                        <Link to={`/product/${item.product.id}`} style={{ textDecoration: 'none', color: colors.primary }}>
+                          <h3 style={typography.h3}>{item.product.name}</h3>
+                        </Link>
                       </div>
                     </div>
                   </td>

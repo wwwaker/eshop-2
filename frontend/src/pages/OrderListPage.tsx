@@ -63,6 +63,18 @@ const OrderListPage: React.FC = () => {
     }
   };
 
+  const handleReceive = async (orderId: number) => {
+    if (!window.confirm('确定已收到商品？')) return;
+    try {
+      await orderApi.updateStatus(orderId, 'COMPLETED');
+      if (user) {
+        orderListPresenter.loadOrders(user.id);
+      }
+    } catch (err) {
+      setError('确认收货失败');
+    }
+  };
+
   const getStatusText = (status: string) => {
     switch (status) {
       case 'PENDING': return '待付款';
@@ -134,7 +146,11 @@ const OrderListPage: React.FC = () => {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id} style={tables.row}>
-                <td style={tables.cell}>{order.orderNo}</td>
+                <td style={tables.cell}>
+                  <Link to={`/order/${order.id}`} style={{ textDecoration: 'none', color: colors.primary }}>
+                    {order.orderNo}
+                  </Link>
+                </td>
                 <td style={{ ...tables.cell, textAlign: 'center' as const }}>¥{order.totalAmount.toFixed(2)}</td>
                 <td style={{ ...tables.cell, textAlign: 'center' as const }}>
                   <span style={getStatusStyle(order.status)}>
@@ -170,6 +186,14 @@ const OrderListPage: React.FC = () => {
                         取消
                       </button>
                     </>
+                  )}
+                  {order.status === 'SHIPPED' && (
+                    <button
+                      onClick={() => handleReceive(order.id)}
+                      style={buttons.smallSuccess}
+                    >
+                      确认收货
+                    </button>
                   )}
                 </td>
               </tr>

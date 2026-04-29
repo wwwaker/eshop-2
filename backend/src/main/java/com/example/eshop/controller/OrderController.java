@@ -61,4 +61,21 @@ public class OrderController {
             return ResponseEntity.badRequest().body(Map.of("error", "状态更新失败"));
         }
     }
+
+    // 管理员系统接口
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<Order>> getAllOrders() {
+        return ResponseEntity.ok(orderService.findAll());
+    }
+
+    @GetMapping("/admin/paginated")
+    public ResponseEntity<Map<String, Object>> getOrdersWithPagination(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "id") String sortField,
+            @RequestParam(defaultValue = "desc") String sortOrder,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(orderService.findAllWithPagination(page, size, search, sortField, sortOrder, status));
+    }
 }

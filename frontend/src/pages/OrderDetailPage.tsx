@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Order } from '../types';
 import { OrderDetailView } from '../contracts';
 import { orderDetailPresenter } from '../presenters';
@@ -88,6 +88,17 @@ const OrderDetailPage: React.FC = () => {
     }
   };
 
+  const handleReceive = async () => {
+    if (!order) return;
+    if (!window.confirm('确定已收到商品？')) return;
+    try {
+      await orderApi.updateStatus(order.id, 'COMPLETED');
+      orderDetailPresenter.loadOrder(order.id);
+    } catch (err) {
+      setError('确认收货失败');
+    }
+  };
+
   const shouldShowLoader = useDelayedLoading(loading);
 
   if (!isAuthenticated) {
@@ -132,24 +143,38 @@ const OrderDetailPage: React.FC = () => {
             <p><strong>创建时间：</strong>{new Date(order.createdAt).toLocaleString()}</p>
           </div>
         </div>
-        {order.status === 'PENDING' && (
+        {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
           <div style={{ ...layout.flex.row, ...layout.gap.md, marginTop: spacing.md }}>
-            <button
-              onClick={handlePay}
-              style={buttons.success}
-              onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttons.successHover)}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
-            >
-              立即付款
-            </button>
-            <button
-              onClick={handleCancel}
-              style={buttons.danger}
-              onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttons.dangerHover)}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
-            >
-              取消订单
-            </button>
+            {order.status === 'PENDING' && (
+              <>
+                <button
+                  onClick={handlePay}
+                  style={buttons.success}
+                  onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttons.successHover)}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+                >
+                  立即付款
+                </button>
+                <button
+                  onClick={handleCancel}
+                  style={buttons.danger}
+                  onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttons.dangerHover)}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+                >
+                  取消订单
+                </button>
+              </>
+            )}
+            {order.status === 'SHIPPED' && (
+              <button
+                onClick={handleReceive}
+                style={buttons.success}
+                onMouseEnter={(e) => Object.assign(e.currentTarget.style, buttons.successHover)}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+              >
+                确认收货
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -183,7 +208,9 @@ const OrderDetailPage: React.FC = () => {
                     </div>
                   )}
                   <div style={{ marginLeft: spacing.md }}>
-                    <h3 style={typography.h3}>{item.productName}</h3>
+                    <Link to={`/product/${item.productId}`} style={{ textDecoration: 'none', color: colors.primary }}>
+                      <h3 style={typography.h3}>{item.productName}</h3>
+                    </Link>
                   </div>
                 </div>
               </td>

@@ -174,6 +174,18 @@ const OrdersPage: React.FC = () => {
                       >
                         查看详情
                       </Link>
+                      {order.status === 'PAID' && (
+                        <button
+                          style={buttons.smallSuccess}
+                          onClick={() => {
+                            if (window.confirm('确定要发货吗？')) {
+                              presenter.shipOrder(order.id);
+                            }
+                          }}
+                        >
+                          发货
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

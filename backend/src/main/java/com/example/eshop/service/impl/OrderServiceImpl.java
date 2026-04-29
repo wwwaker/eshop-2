@@ -102,14 +102,35 @@ public class OrderServiceImpl implements OrderService {
     public Order findById(Long id) {
         Order order = orderDao.findById(id);
         if (order != null) {
-            order.setItems(orderItemDao.findByOrderId(id));
+            List<OrderItem> orderItems = orderItemDao.findByOrderId(id);
+            for (OrderItem item : orderItems) {
+                Product product = productService.findById(item.getProductId());
+                if (product != null) {
+                    item.setProduct(product);
+                }
+            }
+            order.setItems(orderItems);
         }
         return order;
     }
 
     @Override
+    @Transactional
     public boolean updateStatus(Long orderId, String status) {
-        return orderDao.updateStatus(orderId, status) > 0;
+        boolean updated = orderDao.updateStatus(orderId, status) > 0;
+        
+        // 当订单取消时，返还库存
+        if (updated && "CANCELLED".equals(status)) {
+            List<OrderItem> orderItems = orderItemDao.findByOrderId(orderId);
+            for (OrderItem item : orderItems) {
+                Product product = productService.findById(item.getProductId());
+                if (product != null) {
+                    productService.updateStock(item.getProductId(), product.getStock() + item.getQuantity());
+                }
+            }
+        }
+        
+        return updated;
     }
 
     @Override
@@ -141,6 +162,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void shipOrder(Long orderId) {
+        Order order = findById(orderId);
+        if (!"PAID".equals(order.getStatus())) {
+            throw new RuntimeException("只有已付款订单才能发货");
+        }
         orderDao.updateStatus(orderId, "SHIPPED");
     }
 

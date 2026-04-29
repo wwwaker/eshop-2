@@ -200,6 +200,15 @@ export const buttons = {
     fontSize: '0.8rem',
     cursor: 'pointer' as const,
   },
+  smallSuccess: {
+    padding: '0.25rem 0.5rem',
+    backgroundColor: colors.success,
+    color: colors.background,
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '0.8rem',
+    cursor: 'pointer' as const,
+  },
   search: {
     padding: '0.5rem 1rem',
     backgroundColor: colors.primary,

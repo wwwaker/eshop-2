@@ -324,6 +324,15 @@ export const buttons = {
     fontSize: '0.8rem',
     cursor: 'pointer' as const,
   },
+  smallSuccess: {
+    padding: '0.3rem 0.6rem',
+    backgroundColor: colors.success,
+    color: colors.background,
+    border: 'none',
+    borderRadius: borders.radius.sm,
+    fontSize: '0.8rem',
+    cursor: 'pointer' as const,
+  },
   disabled: {
     padding: spacing.md,
     backgroundColor: colors.secondary,
