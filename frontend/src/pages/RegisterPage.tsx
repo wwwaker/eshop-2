@@ -37,7 +37,7 @@ const RegisterPage: React.FC = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    registerPresenter.register({ username, password, email, phone, address });
+    registerPresenter.register({ username, password, confirmPassword, email, phone, address });
   };
 
   return (

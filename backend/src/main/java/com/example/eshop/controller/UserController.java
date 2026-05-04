@@ -149,6 +149,7 @@ public class UserController {
         
         User user = userService.login(username, password);
         if (user != null) {
+            session.setAttribute("LOGGED_IN_USER", user);
             return ResponseEntity.ok(user);
         } else {
             return ResponseEntity.badRequest().body(Map.of("error", "用户名或密码错误"));
@@ -178,6 +179,16 @@ public class UserController {
             return ResponseEntity.ok(Map.of("success", true, "message", "验证码已发送"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "验证码发送失败"));
+        }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@RequestParam Long id) {
+        User user = userService.findById(id);
+        if (user != null) {
+            return ResponseEntity.ok(Map.of("success", true, "data", user));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "用户不存在"));
         }
     }
 

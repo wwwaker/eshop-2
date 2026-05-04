@@ -19,14 +19,11 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
     super.attachView(view);
   }
 
-  register(userData: { username: string; password: string; email: string; phone: string; address: string }): void {
+  register(userData: { username: string; password: string; confirmPassword: string; email: string; phone: string; address: string }): void {
     this.state.loading = true;
     this.getView()?.showLoading();
 
-    const validationErrors = this.validateRegister({
-      ...userData,
-      confirmPassword: this.state.confirmPassword
-    });
+    const validationErrors = this.validateRegister(userData);
 
     if (validationErrors.length > 0) {
       this.state.error = validationErrors.join('\n');

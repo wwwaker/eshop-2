@@ -21,9 +21,19 @@ export class ProfilePresenterImpl extends BasePresenterImpl<ProfileView> impleme
     this.state.loading = true;
     this.getView()?.showLoading();
 
-    userApi.updateProfile({ id: userId } as any)
+    userApi.getProfile(userId)
       .then((response: any) => {
-        // For profile loading, we just show the user data from context
+        if (response.success && response.data) {
+          const user = response.data;
+          this.state.user = user;
+          this.state.email = user.email || '';
+          this.state.phone = user.phone || '';
+          this.state.address = user.address || '';
+          this.getView()?.showSuccess?.('个人信息加载成功');
+        } else {
+          this.state.error = response.error || '加载个人信息失败';
+          this.getView()?.showError(this.state.error);
+        }
       })
       .catch((err: any) => {
         this.state.error = '加载个人信息失败';

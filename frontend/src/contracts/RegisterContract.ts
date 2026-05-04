@@ -20,6 +20,7 @@ export interface RegisterPresenter {
   register(userData: {
     username: string;
     password: string;
+    confirmPassword: string;
     email: string;
     phone: string;
     address: string;

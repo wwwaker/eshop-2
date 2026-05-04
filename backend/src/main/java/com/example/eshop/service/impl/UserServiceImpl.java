@@ -34,6 +34,11 @@ public class UserServiceImpl implements UserService {
     public User login(String username, String password) {
         User user = userDao.findByUsername(username);
         if (user != null && PasswordUtil.matches(password, user.getPassword())) {
+            // 旧SHA-256密码自动升级为BCrypt
+            if (!PasswordUtil.isBCrypt(user.getPassword())) {
+                user.setPassword(PasswordUtil.encrypt(password));
+                userDao.update(user);
+            }
             return user;
         }
         return null;

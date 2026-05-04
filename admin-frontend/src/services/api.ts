@@ -381,43 +381,6 @@ export const uploadApi = {
 };
 
 /**
- * 商品管理API（补充方法）
- */
-// 直接扩展现有 productApi 对象
-Object.assign(productApi, {
-  /**
-   * 创建商品
-   * @param product 商品信息
-   * @returns 创建结果
-   */
-  create: async (product: any) => {
-    const response = await axiosInstance.post<ApiResponse<Product>>('/products', product);
-    return response.data;
-  },
-  
-  /**
-   * 更新商品
-   * @param id 商品ID
-   * @param product 商品信息
-   * @returns 更新结果
-   */
-  update: async (id: number, product: any) => {
-    const response = await axiosInstance.put<ApiResponse<Product>>(`/products/${id}`, product);
-    return response.data;
-  },
-  
-  /**
-   * 根据ID获取商品
-   * @param id 商品ID
-   * @returns 商品信息
-   */
-  getById: async (id: number) => {
-    const response = await axiosInstance.get<ApiResponse<Product>>(`/products/${id}`);
-    return response.data;
-  },
-});
-
-/**
  * 日志管理API
  * 提供日志的查询方法
  */

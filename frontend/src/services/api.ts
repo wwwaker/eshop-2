@@ -38,6 +38,10 @@ export const userApi = {
     const response = await api.post('/users/send-code', { email });
     return response.data;
   },
+  getProfile: async (id: number) => {
+    const response = await api.get(`/users/profile?id=${id}`);
+    return response.data;
+  },
   updateProfile: async (user: Partial<User>) => {
     const response = await api.put('/users/profile', user);
     return response.data;

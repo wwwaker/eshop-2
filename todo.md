@@ -10,11 +10,11 @@
   - 位置：`UserServiceImpl.java:70-78`
   - 修复：将验证码存入 Session，注册时从 Session 取出校验
 
-- [ ] **确认密码校验失效**：RegisterPage 未传 `confirmPassword` 给 Presenter，校验永远无法正确执行
+- [x] **确认密码校验失效**：RegisterPage 未传 `confirmPassword` 给 Presenter，校验永远无法正确执行
   - 位置：`frontend/src/pages/RegisterPage.tsx:40`、`frontend/src/presenters/RegisterPresenter.ts:28`
   - 修复：在调用 `register()` 时传入 `confirmPassword` 字段
 
-- [ ] **`shipOrder` 空指针异常**：`findById` 可能返回 null，直接调用 `getStatus()` 会 NPE
+- [x] **`shipOrder` 空指针异常**：`findById` 可能返回 null，直接调用 `getStatus()` 会 NPE
   - 位置：`OrderServiceImpl.java:164-170`
   - 修复：添加 null 检查，订单不存在时抛出业务异常
 
@@ -26,15 +26,15 @@
   - 位置：`admin-frontend/src/pages/ProductFormPage.tsx:82-92`
   - 修复：等待图片上传完成后再提交商品表单
 
-- [ ] **ProfilePresenter.loadProfile 实现错误**：用 `updateProfile` 接口做查询，且 `as any` 绕过类型检查
+- [x] **ProfilePresenter.loadProfile 实现错误**：用 `updateProfile` 接口做查询，且 `as any` 绕过类型检查
   - 位置：`frontend/src/presenters/ProfilePresenter.ts:24`
   - 修复：调用正确的查询接口获取用户信息
 
-- [ ] **管理后台 API 方法被覆盖**：`api.ts` 中 `Object.assign` 覆盖了 `productApi.create/update/getById`，类型变为 `any`
+- [x] **管理后台 API 方法被覆盖**：`api.ts` 中 `Object.assign` 覆盖了 `productApi.create/update/getById`，类型变为 `any`
   - 位置：`admin-frontend/src/services/api.ts:387-418`
   - 修复：统一 API 方法定义，避免覆盖
 
-- [ ] **AdminController 重复 import**：`java.util.Map` 被 import 了两次
+- [x] **AdminController 重复 import**：`java.util.Map` 被 import 了两次
   - 位置：`AdminController.java:4-5`
 
 ---
@@ -42,26 +42,31 @@
 ## 二、安全问题修复
 
 - [ ] **管理接口无认证保护**：所有 `/api/admin/*` 的 CRUD 接口无需登录即可调用
+  
   - 修复：在 AdminController 的管理接口方法中添加 Session 校验，未登录返回 401
   - 示例：抽取 `checkAdminAuth(HttpSession session)` 私有方法统一校验
-
-- [ ] **用户登录无会话**：UserController 登录成功后不创建 Session，前端无法维持登录态
+  
+- [x] **用户登录无会话**：UserController 登录成功后不创建 Session，前端无法维持登录态
+  
   - 位置：`UserController.java:150`
   - 修复：登录成功后将用户信息存入 HttpSession
-
-- [ ] **水平越权**：购物车/订单接口通过 URL 的 `userId` 访问，任何用户可操作他人数据
+  
+- [x] **水平越权**：购物车/订单接口通过 URL 的 `userId` 访问，任何用户可操作他人数据
+  
   - 修复：从 Session 中获取当前用户 ID，与请求中的 userId 比对
-
-- [ ] **订单状态可被任何人修改**：`PUT /api/orders/{id}/status` 无权限校验
+  
+- [x] **订单状态可被任何人修改**：`PUT /api/orders/{id}/status` 无权限校验
   - 修复：校验当前用户是否为订单所有者或管理员
 
-- [ ] **密码加密不安全**：使用无盐 SHA-256，易被彩虹表攻击
+- [x] **密码加密不安全**：使用无盐 SHA-256，易被彩虹表攻击
+  
   - 位置：`PasswordUtil.java`
   - 修复：改用 BCrypt（Spring Boot 自带 `BCryptPasswordEncoder`，无需额外依赖）
-
+  
 - [ ] **前端密码存入 localStorage**：完整 User 对象含 password 字段存入 localStorage
+  
   - 修复：存储前剔除 password 字段，后端登录响应也不应返回密码
-
+  
 - [ ] **SQL 注入风险**：4 个 Mapper XML 中 ORDER BY 使用 `${}` 拼接
   - 修复：在 Service 层对 sortField/sortOrder 做白名单校验
   ```java

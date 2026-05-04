@@ -163,6 +163,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void shipOrder(Long orderId) {
         Order order = findById(orderId);
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
+        }
         if (!"PAID".equals(order.getStatus())) {
             throw new RuntimeException("只有已付款订单才能发货");
         }
