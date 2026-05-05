@@ -30,7 +30,7 @@ export const userApi = {
     const response = await api.get('/users/captcha');
     return response.data;
   },
-  register: async (user: Omit<User, 'id' | 'role' | 'createdAt' | 'updatedAt'>) => {
+  register: async (user: Omit<User, 'id' | 'role' | 'createdAt' | 'updatedAt'> & { code: string }) => {
     const response = await api.post('/users/register', user);
     return response.data;
   },

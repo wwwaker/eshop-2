@@ -2,6 +2,8 @@ package com.example.eshop.controller;
 
 import com.example.eshop.entity.User;
 import com.example.eshop.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -29,6 +32,8 @@ import java.util.Random;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
 
@@ -149,6 +154,7 @@ public class UserController {
         
         User user = userService.login(username, password);
         if (user != null) {
+            user.setPassword(null);
             session.setAttribute("LOGGED_IN_USER", user);
             return ResponseEntity.ok(user);
         } else {
@@ -156,12 +162,32 @@ public class UserController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        if (userService.findByUsername(user.getUsername()) != null) {
+    public ResponseEntity<?> register(@RequestBody Map<String, String> registerData) {
+        String username = registerData.get("username");
+        String password = registerData.get("password");
+        String email = registerData.get("email");
+        String code = registerData.get("code");
+
+        // 校验邮箱验证码
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpSession session = request.getSession();
+        Map<String, String> emailCodes = (Map<String, String>) session.getAttribute("emailCodes");
+        if (emailCodes == null || !emailCodes.containsKey(email) || !emailCodes.get(email).equals(code)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "验证码错误或已过期"));
+        }
+        emailCodes.remove(email);
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setEmail(email);
+
+        if (userService.findByUsername(username) != null) {
             return ResponseEntity.badRequest().body(Map.of("error", "用户名已存在"));
         }
-        if (userService.findByEmail(user.getEmail()) != null) {
+        if (userService.findByEmail(email) != null) {
             return ResponseEntity.badRequest().body(Map.of("error", "邮箱已存在"));
         }
         if (userService.register(user)) {
@@ -171,14 +197,33 @@ public class UserController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @PostMapping("/send-code")
     public ResponseEntity<?> sendCode(@RequestBody Map<String, String> emailData) {
         String email = emailData.get("email");
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpSession session = request.getSession();
+
+        // 60秒频率限制
+        Long lastSendTime = (Long) session.getAttribute("lastCodeSendTime");
+        if (lastSendTime != null && System.currentTimeMillis() - lastSendTime < 60000) {
+            return ResponseEntity.badRequest().body(Map.of("error", "验证码发送过于频繁，请60秒后再试"));
+        }
+
         try {
-            userService.sendRegisterCode(email);
+            String code = userService.sendRegisterCode(email);
+            // 将验证码存入Session，以邮箱为key支持多邮箱场景
+            Map<String, String> emailCodes = (Map<String, String>) session.getAttribute("emailCodes");
+            if (emailCodes == null) {
+                emailCodes = new HashMap<>();
+                session.setAttribute("emailCodes", emailCodes);
+            }
+            emailCodes.put(email, code);
+            session.setAttribute("lastCodeSendTime", System.currentTimeMillis());
             return ResponseEntity.ok(Map.of("success", true, "message", "验证码已发送"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "验证码发送失败"));
+            log.error("发送验证码失败: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(Map.of("error", "验证码发送失败: " + e.getMessage()));
         }
     }
 

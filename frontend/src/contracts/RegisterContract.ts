@@ -11,6 +11,7 @@ export interface RegisterView {
     email: string;
     phone: string;
     address: string;
+    code: string;
   }): void;
 }
 
@@ -24,6 +25,7 @@ export interface RegisterPresenter {
     email: string;
     phone: string;
     address: string;
+    code: string;
   }): void;
   validateRegister(userData: {
     username: string;
@@ -32,7 +34,9 @@ export interface RegisterPresenter {
     email: string;
     phone: string;
     address: string;
+    code: string;
   }): string[];
+  sendCode(email: string, onCountdownTick: (seconds: number) => void, onDone: () => void): void;
   resetForm(): void;
 }
 
@@ -46,4 +50,5 @@ export interface RegisterState {
   email: string;
   phone: string;
   address: string;
+  code: string;
 }

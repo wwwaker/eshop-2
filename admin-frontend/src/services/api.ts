@@ -63,10 +63,10 @@ export const authApi = {
    * 管理员登录
    * @param username 用户名
    * @param password 密码
-   * @returns 登录响应，包含token和用户信息
+   * @returns 登录响应，包含用户信息
    */
   login: async (username: string, password: string) => {
-    const response = await axiosInstance.post<ApiResponse<{ token: string; user: User }>>('/login', { username, password });
+    const response = await axiosInstance.post<ApiResponse<User>>('/login', { username, password });
     return response.data;
   },
   

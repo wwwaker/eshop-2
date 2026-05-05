@@ -15,7 +15,7 @@ public interface UserService {
     User findByUsername(String username);
     User findByEmail(String email);
     boolean update(User user);
-    void sendRegisterCode(String email);
+    String sendRegisterCode(String email);
 
     // 管理员系统方法
     List<User> findAll();

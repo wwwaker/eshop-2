@@ -74,7 +74,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.login(username, password);
       if (response.success && response.data) {
-        setUser(response.data.user);
+        setUser(response.data as unknown as User);
         return true;
       }
       return false;

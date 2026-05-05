@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class UploadController {
 
     private static final String UPLOAD_DIR = Paths.get("..", "frontend", "public", "images").toAbsolutePath().toString();
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
@@ -30,13 +32,16 @@ public class UploadController {
         }
 
         try {
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+            if (!ALLOWED_EXTENSIONS.contains(fileExtension)) {
+                return ResponseEntity.badRequest().body("不支持的文件类型，仅允许: " + String.join(", ", ALLOWED_EXTENSIONS));
+            }
+
             File uploadDir = new File(UPLOAD_DIR);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
-
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String filename = UUID.randomUUID().toString() + fileExtension;
 
             File dest = new File(UPLOAD_DIR + "/" + filename);

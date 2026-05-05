@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Collections;
 
 /**
  * 管理员控制器
@@ -45,8 +46,18 @@ public class AdminController {
         this.sysLogService = sysLogService;
     }
 
+    private ResponseEntity<?> checkAdminAuth(HttpSession session) {
+        User user = (User) session.getAttribute(SESSION_USER_KEY);
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "error", "未登录或无权限"));
+        }
+        return null;
+    }
+
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, Object>> getDashboardData() {
+    public ResponseEntity<?> getDashboardData(HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         Map<String, Object> dashboardData = new java.util.HashMap<>();
 
         dashboardData.put("totalProducts", productService.findAll().size());
@@ -68,6 +79,7 @@ public class AdminController {
 
     @GetMapping("/products")
     public ResponseEntity<?> getAllProducts(
+            HttpSession session,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
@@ -75,85 +87,113 @@ public class AdminController {
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long categoryId) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(productService.findAllWithPagination(page, size, search, sortField, sortOrder, status, categoryId));
     }
 
     @GetMapping("/products/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<?> getProductById(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(productService.findById(id));
     }
 
     @PostMapping("/products")
-    public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
+    public ResponseEntity<?> saveProduct(@RequestBody Product product, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         productService.save(product);
         return ResponseEntity.ok(product);
     }
 
     @PutMapping("/products/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product product, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         product.setId(id);
         productService.save(product);
         return ResponseEntity.ok(product);
     }
 
     @DeleteMapping("/products/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         productService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/categories")
     public ResponseEntity<?> getAllCategories(
+            HttpSession session,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(categoryService.findAllWithPagination(page, size, search, sortField, sortOrder));
     }
 
     @GetMapping("/categories/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<?> getCategoryById(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(categoryService.findById(id));
     }
 
     @PostMapping("/categories")
-    public ResponseEntity<Category> saveCategory(@RequestBody Category category) {
+    public ResponseEntity<?> saveCategory(@RequestBody Category category, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         categoryService.save(category);
         return ResponseEntity.ok(category);
     }
 
     @PutMapping("/categories/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody Category category, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         category.setId(id);
         categoryService.save(category);
         return ResponseEntity.ok(category);
     }
 
     @DeleteMapping("/categories/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         categoryService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/orders")
     public ResponseEntity<?> getAllOrders(
+            HttpSession session,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) String status) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(orderService.findAllWithPagination(page, size, search, sortField, sortOrder, status));
     }
 
     @GetMapping("/orders/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    public ResponseEntity<?> getOrderById(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(orderService.findById(id));
     }
 
     @PutMapping("/orders/{id}/ship")
-    public ResponseEntity<?> shipOrder(@PathVariable Long id) {
+    public ResponseEntity<?> shipOrder(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         try {
             orderService.shipOrder(id);
             return ResponseEntity.ok(Map.of("success", true, "message", "发货成功"));
@@ -164,34 +204,45 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<?> getAllUsers(
+            HttpSession session,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortField,
             @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false) String role) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(userService.findAllWithPagination(page, size, search, sortField, sortOrder, role));
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @PostMapping("/users")
-    public ResponseEntity<User> saveUser(@RequestBody User user) {
+    public ResponseEntity<?> saveUser(@RequestBody User user, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         userService.save(user);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         userService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user, HttpSession session) {
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
         user.setId(id);
         userService.update(user);
         return ResponseEntity.ok(user);
@@ -203,13 +254,11 @@ public class AdminController {
         String password = loginData.get("password");
         User user = userService.login(username, password);
         if (user != null && "ADMIN".equals(user.getRole())) {
+            user.setPassword(null);
             session.setAttribute(SESSION_USER_KEY, user);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "data", Map.of(
-                    "token", "dummy-token",
-                    "user", user
-                )
+                "data", user
             ));
         } else {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", "用户名或密码错误"));
@@ -226,7 +275,16 @@ public class AdminController {
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
         User user = (User) session.getAttribute(SESSION_USER_KEY);
         if (user != null) {
-            return ResponseEntity.ok(Map.of("success", true, "data", user));
+            User safeUser = new User();
+            safeUser.setId(user.getId());
+            safeUser.setUsername(user.getUsername());
+            safeUser.setEmail(user.getEmail());
+            safeUser.setRole(user.getRole());
+            safeUser.setPhone(user.getPhone());
+            safeUser.setAddress(user.getAddress());
+            safeUser.setCreatedAt(user.getCreatedAt());
+            safeUser.setUpdatedAt(user.getUpdatedAt());
+            return ResponseEntity.ok(Map.of("success", true, "data", safeUser));
         } else {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
@@ -237,13 +295,16 @@ public class AdminController {
 
     @GetMapping("/logs")
     public ResponseEntity<?> getLogs(
+            HttpSession session,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String logLevel,
             @RequestParam(required = false) String search) {
-        if ((username != null && !username.isEmpty()) || 
-            (logLevel != null && !logLevel.isEmpty()) || 
+        ResponseEntity<?> authCheck = checkAdminAuth(session);
+        if (authCheck != null) return authCheck;
+        if ((username != null && !username.isEmpty()) ||
+            (logLevel != null && !logLevel.isEmpty()) ||
             (search != null && !search.isEmpty())) {
             return ResponseEntity.ok(sysLogService.findAllWithFilters(page, size, username, logLevel, search));
         }

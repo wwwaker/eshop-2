@@ -35,8 +35,9 @@ export class LoginPresenterImpl extends BasePresenterImpl<LoginView> implements 
         if (response) {
           this.state.user = response;
           this.state.error = '';
-          localStorage.setItem('user', JSON.stringify(response));
-          this.getView()?.setLoggedInUser(response);
+          const { password: _, ...safeUser } = response;
+          localStorage.setItem('user', JSON.stringify(safeUser));
+          this.getView()?.setLoggedInUser(safeUser);
           this.getView()?.navigateToHome();
         } else {
           this.state.error = '登录失败，请检查用户名和密码';

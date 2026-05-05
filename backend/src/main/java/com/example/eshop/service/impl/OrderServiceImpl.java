@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -27,6 +28,9 @@ import java.util.UUID;
  */
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "order_no", "orderNo", "total_amount", "status", "created_at", "createdAt", "updated_at", "receiver_name", "receiverName", "user_id");
+    private static final Set<String> ALLOWED_SORT_ORDERS = Set.of("ASC", "DESC");
 
     private final OrderDao orderDao;
     private final OrderItemDao orderItemDao;
@@ -138,13 +142,24 @@ public class OrderServiceImpl implements OrderService {
         return orderDao.findAll();
     }
 
+    private void validateSortParams(String sortField, String sortOrder) {
+        if (sortField != null && !sortField.isEmpty() && !ALLOWED_SORT_FIELDS.contains(sortField)) {
+            throw new RuntimeException("非法排序字段");
+        }
+        if (sortOrder != null && !sortOrder.isEmpty() && !ALLOWED_SORT_ORDERS.contains(sortOrder.toUpperCase())) {
+            throw new RuntimeException("非法排序方向");
+        }
+    }
+
     @Override
     public List<Order> findAllWithFilters(String search, String sortField, String sortOrder, String status) {
+        validateSortParams(sortField, sortOrder);
         return orderDao.findAllWithFilters(search, sortField, sortOrder, status);
     }
 
     @Override
     public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String status) {
+        validateSortParams(sortField, sortOrder);
         int offset = (page - 1) * size;
         List<Order> orders = orderDao.findAllWithPagination(offset, size, search, sortField, sortOrder, status);
         int totalElements = orderDao.countWithFilters(search, status);

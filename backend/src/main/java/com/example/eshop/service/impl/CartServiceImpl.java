@@ -64,11 +64,12 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void updateQuantity(Long cartItemId, Integer quantity) {
-        CartItem cartItem = new CartItem();
-        cartItem.setId(cartItemId);
-        cartItem.setQuantity(quantity);
-        cartItem.setUpdatedAt(LocalDateTime.now());
-        cartItemDao.update(cartItem);
+        CartItem cartItem = cartItemDao.findById(cartItemId);
+        if (cartItem != null) {
+            cartItem.setQuantity(quantity);
+            cartItem.setUpdatedAt(LocalDateTime.now());
+            cartItemDao.update(cartItem);
+        }
     }
 
     @Override

@@ -144,20 +144,23 @@ export class ProductFormPresenterImpl extends BasePresenterImpl<ProductFormView>
       });
   }
 
-  uploadImage(file: File): void {
+  uploadImage(file: File): Promise<string> {
     this.state.imageUploading = true;
     this.getView()?.showLoading();
 
-    uploadApi.uploadImage(file)
+    return uploadApi.uploadImage(file)
       .then(response => {
         if (response.success && response.imageUrl) {
           this.getView()?.showImageUploadSuccess(response.imageUrl);
+          return response.imageUrl;
         } else {
           this.getView()?.showImageUploadError('图片上传失败');
+          throw new Error('图片上传失败');
         }
       })
       .catch((err: any) => {
         this.getView()?.showImageUploadError('图片上传失败');
+        throw err;
       })
       .finally(() => {
         this.state.imageUploading = false;

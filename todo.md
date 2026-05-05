@@ -6,7 +6,7 @@
 
 ## 一、必须修复的 Bug
 
-- [ ] **验证码功能无效**：`sendRegisterCode` 生成验证码但未存储，注册时也不校验，整个验证码机制是摆设
+- [x] **验证码功能无效**：`sendRegisterCode` 生成验证码但未存储，注册时也不校验，整个验证码机制是摆设
   - 位置：`UserServiceImpl.java:70-78`
   - 修复：将验证码存入 Session，注册时从 Session 取出校验
 
@@ -18,11 +18,11 @@
   - 位置：`OrderServiceImpl.java:164-170`
   - 修复：添加 null 检查，订单不存在时抛出业务异常
 
-- [ ] **`updateQuantity` 数据丢失**：新建 CartItem 只设 id+quantity，update 可能将 userId/productId 置 null
+- [x] **`updateQuantity` 数据丢失**：新建 CartItem 只设 id+quantity，update 可能将 userId/productId 置 null
   - 位置：`CartServiceImpl.java:66-72`
   - 修复：先从数据库查出完整 CartItem，再更新 quantity
 
-- [ ] **图片上传竞态条件**：管理后台商品表单中图片上传和商品保存并行发起，保存时用的是旧数据
+- [x] **图片上传竞态条件**：管理后台商品表单中图片上传和商品保存并行发起，保存时用的是旧数据
   - 位置：`admin-frontend/src/pages/ProductFormPage.tsx:82-92`
   - 修复：等待图片上传完成后再提交商品表单
 
@@ -41,7 +41,7 @@
 
 ## 二、安全问题修复
 
-- [ ] **管理接口无认证保护**：所有 `/api/admin/*` 的 CRUD 接口无需登录即可调用
+- [x] **管理接口无认证保护**：所有 `/api/admin/*` 的 CRUD 接口无需登录即可调用
   
   - 修复：在 AdminController 的管理接口方法中添加 Session 校验，未登录返回 401
   - 示例：抽取 `checkAdminAuth(HttpSession session)` 私有方法统一校验
@@ -63,11 +63,12 @@
   - 位置：`PasswordUtil.java`
   - 修复：改用 BCrypt（Spring Boot 自带 `BCryptPasswordEncoder`，无需额外依赖）
   
-- [ ] **前端密码存入 localStorage**：完整 User 对象含 password 字段存入 localStorage
+- [x] **前端密码存入 localStorage**：完整 User 对象含 password 字段存入 localStorage
   
   - 修复：存储前剔除 password 字段，后端登录响应也不应返回密码
   
-- [ ] **SQL 注入风险**：4 个 Mapper XML 中 ORDER BY 使用 `${}` 拼接
+- [x] **SQL 注入风险**：4 个 Mapper XML 中 ORDER BY 使用 `${}` 拼接
+  
   - 修复：在 Service 层对 sortField/sortOrder 做白名单校验
   ```java
   Set<String> allowedFields = Set.of("id", "created_at", "price", "stock", "total_amount");
@@ -76,15 +77,17 @@
       throw new RuntimeException("非法排序参数");
   }
   ```
-
-- [ ] **文件上传无类型限制**：可上传任意文件类型
+  
+- [x] **文件上传无类型限制**：可上传任意文件类型
+  
   - 位置：`UploadController.java`
   - 修复：添加文件扩展名白名单（如 jpg/png/gif/webp）
-
-- [ ] **邮箱验证码接口无频率限制**：可被用于邮件轰炸
+  
+- [x] **邮箱验证码接口无频率限制**：可被用于邮件轰炸
   - 修复：在 Session 中记录上次发送时间，60 秒内不允许重复发送
 
-- [ ] **硬编码假 Token**：管理员登录返回 `"dummy-token"`
+- [x] **硬编码假 Token**：管理员登录返回 `"dummy-token"`
+  
   - 位置：`AdminController.java:212`
   - 修复：基于用户信息+时间戳生成简单 Token，或直接移除 Token 机制改用 Session
 

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 商品服务实现类
@@ -16,6 +17,9 @@ import java.util.Map;
  */
 @Service
 public class ProductServiceImpl implements ProductService {
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "name", "price", "stock", "created_at", "updated_at", "status", "categoryName", "category_id");
+    private static final Set<String> ALLOWED_SORT_ORDERS = Set.of("ASC", "DESC");
 
     private final ProductDao productDao;
 
@@ -54,13 +58,24 @@ public class ProductServiceImpl implements ProductService {
         return productDao.findAll();
     }
 
+    private void validateSortParams(String sortField, String sortOrder) {
+        if (sortField != null && !sortField.isEmpty() && !ALLOWED_SORT_FIELDS.contains(sortField)) {
+            throw new RuntimeException("非法排序字段");
+        }
+        if (sortOrder != null && !sortOrder.isEmpty() && !ALLOWED_SORT_ORDERS.contains(sortOrder.toUpperCase())) {
+            throw new RuntimeException("非法排序方向");
+        }
+    }
+
     @Override
     public List<Product> findAllWithFilters(String search, String sortField, String sortOrder, String status, Long categoryId) {
+        validateSortParams(sortField, sortOrder);
         return productDao.findAllWithFilters(search, sortField, sortOrder, status, categoryId);
     }
 
     @Override
     public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String status, Long categoryId) {
+        validateSortParams(sortField, sortOrder);
         int offset = (page - 1) * size;
         List<Product> products = productDao.findAllWithPagination(offset, size, search, sortField, sortOrder, status, categoryId);
         int totalElements = productDao.countWithFilters(search, status, categoryId);

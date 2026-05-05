@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { RegisterView } from '../contracts';
 import { registerPresenter } from '../presenters';
-import { containers, typography, inputs, buttons, alerts, spacing } from '../styles';
+import { containers, typography, inputs, buttons, alerts, spacing, colors, borders } from '../styles';
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -11,9 +11,11 @@ const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
 
   const view: RegisterView = useMemo(() => ({
@@ -33,11 +35,20 @@ const RegisterPage: React.FC = () => {
     };
   }, [view]);
 
+  const handleSendCode = useCallback(() => {
+    setError('');
+    registerPresenter.sendCode(
+      email,
+      (seconds) => setCountdown(seconds),
+      () => setCountdown(0)
+    );
+  }, [email]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    registerPresenter.register({ username, password, confirmPassword, email, phone, address });
+    registerPresenter.register({ username, password, confirmPassword, email, phone, address, code });
   };
 
   return (
@@ -102,13 +113,48 @@ const RegisterPage: React.FC = () => {
 
         <div style={containers.formGroup}>
           <label htmlFor="email" style={typography.label}>邮箱</label>
+          <div style={{ display: 'flex', gap: spacing.sm }}>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="请输入邮箱"
+              style={{ ...inputs.default, flex: 1 }}
+            />
+            <button
+              type="button"
+              onClick={handleSendCode}
+              disabled={countdown > 0}
+              style={{
+                padding: `0 ${spacing.md}`,
+                borderRadius: borders.radius.sm,
+                border: `1px solid ${countdown > 0 ? colors.border : colors.primary}`,
+                backgroundColor: countdown > 0 ? colors.light : 'transparent',
+                color: countdown > 0 ? colors.textLight : colors.primary,
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                cursor: countdown > 0 ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {countdown > 0 ? `${countdown}s` : '发送验证码'}
+            </button>
+          </div>
+        </div>
+
+        <div style={containers.formGroup}>
+          <label htmlFor="code" style={typography.label}>邮箱验证码</label>
           <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            id="code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
             required
-            placeholder="请输入邮箱"
+            maxLength={6}
+            placeholder="请输入6位验证码"
             style={inputs.default}
           />
         </div>

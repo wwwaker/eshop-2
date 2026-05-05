@@ -5,6 +5,7 @@ import com.example.eshop.entity.User;
 import com.example.eshop.service.UserService;
 import com.example.eshop.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 用户服务实现类
@@ -21,13 +23,18 @@ import java.util.Map;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "username", "email", "phone", "role", "created_at", "updated_at");
+    private static final Set<String> ALLOWED_SORT_ORDERS = Set.of("ASC", "DESC");
+
     private final UserDao userDao;
     private final JavaMailSender mailSender;
+    private final String mailFrom;
 
     @Autowired
-    public UserServiceImpl(UserDao userDao, JavaMailSender mailSender) {
+    public UserServiceImpl(UserDao userDao, JavaMailSender mailSender, @Value("${spring.mail.username}") String mailFrom) {
         this.userDao = userDao;
         this.mailSender = mailSender;
+        this.mailFrom = mailFrom;
     }
 
     @Override
@@ -72,15 +79,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void sendRegisterCode(String email) {
+    public String sendRegisterCode(String email) {
         String code = String.format("%06d", (int) (Math.random() * 999999));
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(mailFrom);
         message.setTo(email);
         message.setSubject("EShop注册验证码");
         message.setText("您的注册验证码是：" + code + "，有效期为5分钟。");
 
         mailSender.send(message);
+        return code;
     }
 
     @Override
@@ -88,13 +97,24 @@ public class UserServiceImpl implements UserService {
         return userDao.findAll();
     }
 
+    private void validateSortParams(String sortField, String sortOrder) {
+        if (sortField != null && !sortField.isEmpty() && !ALLOWED_SORT_FIELDS.contains(sortField)) {
+            throw new RuntimeException("非法排序字段");
+        }
+        if (sortOrder != null && !sortOrder.isEmpty() && !ALLOWED_SORT_ORDERS.contains(sortOrder.toUpperCase())) {
+            throw new RuntimeException("非法排序方向");
+        }
+    }
+
     @Override
     public List<User> findAllWithFilters(String search, String sortField, String sortOrder, String role) {
+        validateSortParams(sortField, sortOrder);
         return userDao.findAllWithFilters(search, sortField, sortOrder, role);
     }
 
     @Override
     public Map<String, Object> findAllWithPagination(int page, int size, String search, String sortField, String sortOrder, String role) {
+        validateSortParams(sortField, sortOrder);
         int offset = (page - 1) * size;
         List<User> users = userDao.findAllWithPagination(offset, size, search, sortField, sortOrder, role);
         int totalElements = userDao.countWithFilters(search, role);

@@ -12,14 +12,15 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
     confirmPassword: '',
     email: '',
     phone: '',
-    address: ''
+    address: '',
+    code: ''
   };
 
   attachView(view: RegisterView): void {
     super.attachView(view);
   }
 
-  register(userData: { username: string; password: string; confirmPassword: string; email: string; phone: string; address: string }): void {
+  register(userData: { username: string; password: string; confirmPassword: string; email: string; phone: string; address: string; code: string }): void {
     this.state.loading = true;
     this.getView()?.showLoading();
 
@@ -33,7 +34,7 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
       return;
     }
 
-    userApi.register(userData)
+    userApi.register({ username: userData.username, password: userData.password, email: userData.email, phone: userData.phone, address: userData.address, code: userData.code })
       .then((response: any) => {
         if (response.success) {
           this.state.success = '注册成功，即将跳转到登录页面...';
@@ -57,6 +58,32 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
       });
   }
 
+  sendCode(email: string, onCountdownTick: (seconds: number) => void, onDone: () => void): void {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.getView()?.showError('请先输入正确的邮箱地址');
+      return;
+    }
+
+    userApi.sendCode(email)
+      .then(() => {
+        let seconds = 60;
+        onCountdownTick(seconds);
+        const timer = setInterval(() => {
+          seconds--;
+          if (seconds <= 0) {
+            clearInterval(timer);
+            onDone();
+          } else {
+            onCountdownTick(seconds);
+          }
+        }, 1000);
+      })
+      .catch(() => {
+        this.getView()?.showError('验证码发送失败，请重试');
+        onDone();
+      });
+  }
+
   validateRegister(userData: {
     username: string;
     password: string;
@@ -64,6 +91,7 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
     email: string;
     phone: string;
     address: string;
+    code: string;
   }): string[] {
     const errors: string[] = [];
 
@@ -93,6 +121,10 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
       errors.push('手机号不能为空');
     }
 
+    if (!userData.code || userData.code.trim() === '') {
+      errors.push('验证码不能为空');
+    }
+
     return errors;
   }
 
@@ -103,6 +135,7 @@ export class RegisterPresenterImpl extends BasePresenterImpl<RegisterView> imple
     this.state.email = '';
     this.state.phone = '';
     this.state.address = '';
+    this.state.code = '';
     this.state.error = '';
     this.state.success = '';
   }

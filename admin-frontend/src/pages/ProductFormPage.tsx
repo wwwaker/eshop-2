@@ -78,17 +78,18 @@ const ProductFormPage: React.FC = () => {
     setSuccess('');
 
     try {
-      // 上传图片
+      // 先上传图片，等待完成后再提交商品
+      let currentFormData = { ...formData };
       if (imageFile) {
-        presenter.uploadImage(imageFile);
-        // 图片上传成功后会通过 showImageUploadSuccess 回调更新 formData
+        const imageUrl = await presenter.uploadImage(imageFile);
+        currentFormData = { ...currentFormData, imageUrl };
       }
 
       // 提交商品信息
       if (isEdit && id) {
-        presenter.updateProduct(Number(id), formData as Product);
+        presenter.updateProduct(Number(id), currentFormData as Product);
       } else {
-        presenter.saveProduct(formData as Product);
+        presenter.saveProduct(currentFormData as Product);
       }
     } catch (err) {
       setError(isEdit ? '商品更新失败' : '商品添加失败');
