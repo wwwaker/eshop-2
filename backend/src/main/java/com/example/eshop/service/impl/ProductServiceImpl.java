@@ -1,9 +1,12 @@
 package com.example.eshop.service.impl;
 
+import com.example.eshop.config.CacheConst;
 import com.example.eshop.dao.ProductDao;
 import com.example.eshop.entity.Product;
 import com.example.eshop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,31 +32,37 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = CacheConst.PRODUCTS, key = "'all_on_sale'")
     public List<Product> findAllOnSale() {
         return productDao.findAllOnSale();
     }
 
     @Override
+    @Cacheable(value = CacheConst.PRODUCTS, key = "'category_'+#categoryId")
     public List<Product> findByCategoryId(Long categoryId) {
         return productDao.findByCategoryId(categoryId);
     }
 
     @Override
+    @Cacheable(value = CacheConst.PRODUCTS, key = "'search_'+#keyword")
     public List<Product> searchByName(String keyword) {
         return productDao.searchByName(keyword);
     }
 
     @Override
+    @Cacheable(value = CacheConst.PRODUCTS, key = "'suggestions_'+#keyword")
     public List<String> searchSuggestions(String keyword) {
         return productDao.searchSuggestions(keyword);
     }
 
     @Override
+    @Cacheable(value = CacheConst.PRODUCTS, key = "'id_'+#id")
     public Product findById(Long id) {
         return productDao.findById(id);
     }
 
     @Override
+    @Cacheable(value = CacheConst.PRODUCTS, key = "'all'")
     public List<Product> findAll() {
         return productDao.findAll();
     }
@@ -92,6 +101,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = CacheConst.PRODUCTS, allEntries = true)
     public void save(Product product) {
         if (product.getId() == null) {
             productDao.insert(product);
@@ -101,11 +111,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = CacheConst.PRODUCTS, allEntries = true)
     public void deleteById(Long id) {
         productDao.deleteById(id);
     }
 
     @Override
+    @CacheEvict(value = CacheConst.PRODUCTS, allEntries = true)
     public void updateStock(Long id, int stock) {
         productDao.updateStock(id, stock);
     }
@@ -126,6 +138,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = CacheConst.PRODUCTS, allEntries = true)
     public int moveToCategory(Long fromCategoryId, Long toCategoryId) {
         return productDao.moveToCategory(fromCategoryId, toCategoryId);
     }

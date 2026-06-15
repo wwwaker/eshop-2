@@ -1,11 +1,14 @@
 package com.example.eshop.service.impl;
 
+import com.example.eshop.config.CacheConst;
 import com.example.eshop.dao.UserDao;
 import com.example.eshop.entity.User;
 import com.example.eshop.service.UserService;
 import com.example.eshop.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = CacheConst.USERS, allEntries = true)
     public boolean register(User user) {
         if (user.getRole() == null) {
             user.setRole("USER");
@@ -63,16 +67,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = CacheConst.USERS, key = "'username_'+#username")
     public User findByUsername(String username) {
         return userDao.findByUsername(username);
     }
 
     @Override
+    @Cacheable(value = CacheConst.USERS, key = "'email_'+#email")
     public User findByEmail(String email) {
         return userDao.findByEmail(email);
     }
 
     @Override
+    @CacheEvict(value = CacheConst.USERS, allEntries = true)
     public boolean update(User user) {
         user.setUpdatedAt(LocalDateTime.now());
         return userDao.update(user) > 0;
@@ -131,16 +138,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = CacheConst.USERS, key = "'id_'+#id")
     public User findById(Long id) {
         return userDao.findById(id);
     }
 
     @Override
+    @CacheEvict(value = CacheConst.USERS, allEntries = true)
     public void deleteById(Long id) {
         userDao.deleteById(id);
     }
 
     @Override
+    @CacheEvict(value = CacheConst.USERS, allEntries = true)
     public void save(User user) {
         if (user.getId() == null) {
             if (user.getRole() == null) {

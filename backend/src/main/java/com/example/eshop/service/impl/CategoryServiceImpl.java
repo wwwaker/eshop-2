@@ -1,9 +1,12 @@
 package com.example.eshop.service.impl;
 
+import com.example.eshop.config.CacheConst;
 import com.example.eshop.dao.CategoryDao;
 import com.example.eshop.entity.Category;
 import com.example.eshop.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = CacheConst.CATEGORIES, key = "'all'")
     public List<Category> findAll() {
         return categoryDao.findAll();
     }
@@ -67,11 +71,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = CacheConst.CATEGORIES, key = "'id_'+#id")
     public Category findById(Long id) {
         return categoryDao.findById(id);
     }
 
     @Override
+    @CacheEvict(value = CacheConst.CATEGORIES, allEntries = true)
     public void save(Category category) {
         if (category.getId() == null) {
             categoryDao.insert(category);
@@ -81,6 +87,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(value = CacheConst.CATEGORIES, allEntries = true)
     public void deleteById(Long id) {
         categoryDao.deleteById(id);
     }
