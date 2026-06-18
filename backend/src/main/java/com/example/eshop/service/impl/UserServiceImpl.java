@@ -67,13 +67,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable(value = CacheConst.USERS, key = "'username_'+#username")
+    @Cacheable(value = CacheConst.USERS, key = "'username_'+#username", unless = "#result == null")
     public User findByUsername(String username) {
         return userDao.findByUsername(username);
     }
 
     @Override
-    @Cacheable(value = CacheConst.USERS, key = "'email_'+#email")
+    @Cacheable(value = CacheConst.USERS, key = "'email_'+#email", unless = "#result == null")
     public User findByEmail(String email) {
         return userDao.findByEmail(email);
     }
